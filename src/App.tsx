@@ -1,591 +1,439 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Search,
-  User,
-  ShoppingBag,
-  Menu,
-  X,
-  ChevronRight,
-  Plus,
-  Minus,
-  Trash2,
-  Heart,
-  Star,
-  CheckCircle,
-  MessageCircle,
+import React, { useState } from 'react';
+import { 
+  Search, 
+  User, 
+  ShoppingBag, 
+  Menu, 
+  X, 
+  ChevronRight, 
+  Heart, 
+  Star, 
+  MessageCircle, 
+  Check, 
+  ShieldCheck, 
+  Truck, 
+  Sparkles, 
+  Plus, 
   ArrowRight,
-  Sparkles,
-  ShieldCheck,
-  Truck,
-  RotateCcw
+  Calculator,
+  PawPrint,
+  Flame,
+  Award,
+  Clock,
+  Sparkle
 } from 'lucide-react';
 
-// ==========================================
-// TYPESCRIPT INTERFACES
-// ==========================================
-
-export interface NavItem {
-  id: string;
-  label: string;
-  href: string;
-  badge?: string;
-}
-
 export interface Product {
-  id: string;
+  id: number;
   name: string;
-  category: 'packs' | 'food' | 'snacks' | 'hygiene' | 'cans';
-  price: number;
-  originalPrice?: number;
+  category: string;
+  price: string;
+  originalPrice: string;
   rating: number;
-  reviewsCount: number;
-  tag?: string;
-  imageBg: string;
-  badgeColor: string;
-  description: string;
-  dogImage?: string;
+  reviews: number;
+  image: string;
+  badge: string;
+  badgeBg: string;
+  flavorTag: string;
+  portionSize: string;
+  proteinType: 'pollo' | 'pavo' | 'cordero' | 'pescado';
 }
 
-export interface CartItem {
-  product: Product;
+export interface CartItem extends Product {
   quantity: number;
 }
 
-export interface Testimonial {
-  id: string;
-  author: string;
-  petName: string;
-  petBreed: string;
-  comment: string;
-  rating: number;
-  avatarBg: string;
+export interface CalculatorState {
+  dogName: string;
+  weight: number;
+  ageYears: number;
+  activityLevel: 'low' | 'medium' | 'high';
 }
 
-export interface Banner {
-  id: string;
-  title: string;
-  subtitle: string;
-  ctaText: string;
-  bgGradient: string;
-}
-
-// ==========================================
-// MOCK DATA
-// ==========================================
-
-const NAV_ITEMS: NavItem[] = [
-  { id: '1', label: 'PACKS', href: '#packs', badge: 'POPULAR' },
-  { id: '2', label: 'Tienda', href: '#tienda' },
-  { id: '3', label: 'Planes Personalizados', href: '#planes' },
-  { id: '4', label: 'Sobre Nosotros', href: '#nosotros' },
-  { id: '5', label: 'Puntos de Venta', href: '#puntos' }
-];
-
-const PRODUCTS: Product[] = [
+const BEST_SELLERS: Product[] = [
   {
-    id: 'prod-1',
-    name: 'Pack Super Canino Bark',
-    category: 'packs',
-    price: 129.90,
-    originalPrice: 155.00,
+    id: 1,
+    name: 'Receta Pavo & Verduras Frescas',
+    category: 'Comida Natural Cocida',
+    price: 'S/ 89.90',
+    originalPrice: 'S/ 105.00',
     rating: 4.9,
-    reviewsCount: 142,
-    tag: 'MÁS VENDIDO',
-    imageBg: 'bg-teal-100',
-    badgeColor: 'bg-rose-500 text-white',
-    description: 'Incluye 2 kg de alimento BARF Res, 1 Snack Larga Duración y 1 Toallita Húmeda.',
-    dogImage: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=400'
+    reviews: 142,
+    image: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&q=80&w=400',
+    badge: 'MÁS VENDIDO',
+    badgeBg: 'bg-[#EC2CC2]', // Rosa Fucsia
+    flavorTag: 'Pavo Magro & Camote',
+    portionSize: 'Packs de 300g',
+    proteinType: 'pavo'
   },
   {
-    id: 'prod-2',
-    name: 'Alimento Natural Res 900g',
-    category: 'food',
-    price: 45.00,
+    id: 2,
+    name: 'Receta Pollo & Arroz Integral',
+    category: 'Nutrición Diaria',
+    price: 'S/ 79.90',
+    originalPrice: 'S/ 92.00',
     rating: 4.8,
-    reviewsCount: 89,
-    tag: '100% NATURAL',
-    imageBg: 'bg-emerald-100',
-    badgeColor: 'bg-emerald-700 text-white',
-    description: 'Carne fresca seleccionada con suplementos y vitaminas naturales.',
-    dogImage: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=400'
+    reviews: 118,
+    image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=400',
+    badge: 'FÓRMULA CLÁSICA',
+    badgeBg: 'bg-[#FE4811]', // Naranja Fuego
+    flavorTag: 'Pollo de Corral & Zanahoria',
+    portionSize: 'Packs de 300g / 180g',
+    proteinType: 'pollo'
   },
   {
-    id: 'prod-3',
-    name: 'Alimento Pollo Completo 900g',
-    category: 'food',
-    price: 42.00,
+    id: 3,
+    name: 'Receta Cordero & Cerdo Gourmet',
+    category: 'Proteína Especial',
+    price: 'S/ 94.90',
+    originalPrice: 'S/ 110.00',
+    rating: 5.0,
+    reviews: 87,
+    image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=400',
+    badge: 'HIPOALERGÉNICO',
+    badgeBg: 'bg-[#8247AF]', // Violeta
+    flavorTag: 'Cordero & Espinacas',
+    portionSize: 'Packs de 300g',
+    proteinType: 'cordero'
+  },
+  {
+    id: 4,
+    name: 'Mix Pescado de Isla & Pollo',
+    category: 'Piel & Pelaje Brillante',
+    price: 'S/ 84.90',
+    originalPrice: 'S/ 98.00',
     rating: 4.9,
-    reviewsCount: 112,
-    imageBg: 'bg-teal-50',
-    badgeColor: 'bg-slate-900 text-white',
-    description: 'Formulado con pechuga de pollo y vegetales ricos en fibra.',
-    dogImage: 'https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 'prod-4',
-    name: 'Snacks Long Lasting Pollo',
-    category: 'snacks',
-    price: 24.90,
-    originalPrice: 29.90,
-    rating: 4.7,
-    reviewsCount: 64,
-    tag: 'PROMO',
-    imageBg: 'bg-emerald-200',
-    badgeColor: 'bg-rose-500 text-white',
-    description: 'Premios entretenidos de masticación prolongada para salud dental.',
-    dogImage: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 'prod-5',
-    name: 'Toallitas Húmedas Natural Home',
-    category: 'hygiene',
-    price: 18.50,
-    rating: 4.9,
-    reviewsCount: 203,
-    imageBg: 'bg-sky-100',
-    badgeColor: 'bg-sky-700 text-white',
-    description: 'Hipoalergénicas con aloe vera para patitas y pelaje suave.',
-    dogImage: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 'prod-6',
-    name: 'Lata Húmeda Salmón Vital 400g',
-    category: 'cans',
-    price: 19.90,
-    rating: 4.8,
-    reviewsCount: 78,
-    tag: 'OMEGA 3',
-    imageBg: 'bg-amber-100',
-    badgeColor: 'bg-amber-800 text-white',
-    description: 'Salmón fresco ideal para piel sensible y pelaje brillante.',
-    dogImage: 'https://images.unsplash.com/photo-1561037404-61cd46aa615b?auto=format&fit=crop&q=80&w=400'
+    reviews: 95,
+    image: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&q=80&w=400',
+    badge: 'RICOS EN OMEGA 3',
+    badgeBg: 'bg-[#4450FD]', // Azul Eléctrico
+    flavorTag: 'Pescado & Zapallo Macre',
+    portionSize: 'Packs de 180g',
+    proteinType: 'pescado'
   }
 ];
-
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: 't1',
-    author: 'Camila Rossi',
-    petName: 'Bruno',
-    petBreed: 'Golden Retriever',
-    comment: 'Cambiamos a los packs de comida natural y el pelaje de Bruno brilla muchísimo más. ¡Le encanta!',
-    rating: 5,
-    avatarBg: 'bg-teal-500'
-  },
-  {
-    id: 't2',
-    author: 'Renzo Mendoza',
-    petName: 'Samba',
-    petBreed: 'French Bulldog',
-    comment: 'Sus problemas digestivos desaparecieron por completo. El servicio de entrega es rapidísimo.',
-    rating: 5,
-    avatarBg: 'bg-rose-500'
-  },
-  {
-    id: 't3',
-    author: 'Valeria Thorne',
-    petName: 'Milo & Coco',
-    petBreed: 'Mestizos',
-    comment: 'Los snacks de larga duración los mantienen entretenidos por horas. ¡Super recomendado!',
-    rating: 5,
-    avatarBg: 'bg-emerald-600'
-  }
-];
-
-// ==========================================
-// MAIN APP COMPONENT
-// ==========================================
 
 export default function App() {
-  // State management
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [cartCount, setCartCount] = useState<number>(3);
+  const [searchOpen, setSearchOpen] = useState<boolean>(false);
+  const [showTooltip, setShowTooltip] = useState<boolean>(true);
   const [activeSlide, setActiveSlide] = useState<number>(0);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Total item count in cart
-  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
+  // Calculator State
+  const [dogWeight, setDogWeight] = useState<number>(12);
+  const [activity, setActivity] = useState<'low' | 'medium' | 'high'>('medium');
+  const [calcResult, setCalcResult] = useState<number>(360); // grams per day
 
-  // Cart total price calculation
-  const cartSubtotal = cart.reduce(
-    (total, item) => total + item.product.price * item.quantity,
-    0
-  );
-  const freeShippingThreshold = 79.9;
-  const freeShippingRemaining = Math.max(0, freeShippingThreshold - cartSubtotal);
-  const hasFreeShipping = cartSubtotal >= freeShippingThreshold;
+  const handleCalculate = (e: React.FormEvent) => {
+    e.preventDefault();
+    let factor = 0.025; // 2.5% of body weight for medium activity
+    if (activity === 'low') factor = 0.02;
+    if (activity === 'high') factor = 0.035;
 
-  // Notification Toast Helper
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
+    const grams = Math.round(dogWeight * 1000 * factor);
+    setCalcResult(grams);
   };
 
-  // Cart handlers
-  const addToCart = (product: Product) => {
-    setCart((prevCart) => {
-      const existingIndex = prevCart.findIndex((i) => i.product.id === product.id);
-      if (existingIndex > -1) {
-        const newCart = [...prevCart];
-        newCart[existingIndex].quantity += 1;
-        return newCart;
-      }
-      return [...prevCart, { product, quantity: 1 }];
-    });
-    showToast(`¡${product.name} agregado al carrito!`);
+  const addToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCartCount(prev => prev + 1);
   };
-
-  const updateQuantity = (productId: string, delta: number) => {
-    setCart((prevCart) => {
-      return prevCart
-        .map((item) => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter((item): item is CartItem => item !== null);
-    });
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
-  };
-
-  // Filter products by category & search query
-  const filteredProducts = PRODUCTS.filter((product) => {
-    const matchesCategory =
-      selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  // Hero auto slider effect
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % 3);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-rose-500 selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-[#FE4811] selection:text-white">
       
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-24 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-emerald-400/30 animate-bounce">
-          <Sparkles className="w-5 h-5 text-emerald-400" />
-          <span className="text-sm font-semibold">{toastMessage}</span>
-        </div>
-      )}
+      {/* Injecting Fonts dynamically for Fredoka/Outfit and Montserrat */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;900&family=Montserrat:wght@400;600;700;900&display=swap');
+        
+        .font-brand {
+          font-family: 'Fredoka', cursive, sans-serif;
+        }
+        .font-sans {
+          font-family: 'Montserrat', sans-serif;
+        }
+      `}</style>
 
-      {/* ==========================================
-          1. TOP ANNOUNCEMENT BAR
-      ========================================== */}
-      <div className="bg-slate-900 text-white text-xs py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2 border-b border-slate-800">
-        <Truck className="w-4 h-4 text-emerald-400 shrink-0" />
+      {}
+      <div className="bg-[#266433] text-white text-xs py-2.5 px-4 text-center font-bold tracking-wider flex items-center justify-center gap-2 shadow-inner">
+        <Sparkles className="w-4 h-4 text-[#CFD1FC] animate-pulse" />
         <span>
-          ENVÍO GRATIS A PARTIR DE S/ 79.90.{' '}
-          <a
-            href="#tienda"
-            className="underline font-bold text-emerald-400 hover:text-emerald-300 transition-colors ml-1"
-          >
-            DESCUBRE MÁS AQUÍ
+          NUTRICIÓN DE VERDAD • ENVÍO GRATIS A PARTIR DE S/ 79.90 EN LIMA METROPOLITANA. CONOCE MÁS{' '}
+          <a href="#planes" className="underline font-black text-[#CFD1FC] hover:text-white transition-colors">
+            AQUÍ
           </a>
         </span>
       </div>
 
-      {/* ==========================================
-          2. STICKY HEADER / NAVBAR
-      ========================================== */}
-      <header className="sticky top-0 z-40 bg-teal-400/95 backdrop-blur-md shadow-sm border-b border-teal-500/20 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-          
-          {/* Brand Logo */}
-          <a href="#" className="flex items-center gap-1 group">
-            <span className="font-black text-3xl md:text-4xl text-slate-900 tracking-tighter transition-transform group-hover:scale-105">
-              BARKER
-            </span>
-            <span className="text-xs font-bold text-slate-900 self-start mt-1">®</span>
-          </a>
+      {}
+      <nav className="sticky top-0 z-50 bg-[#CFD1FC]/95 backdrop-blur-md border-b border-[#266433]/15 transition-all duration-300 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            
+            {/* Logo PATITA VERDE */}
+            <div className="flex items-center gap-8">
+              <a href="#" className="flex items-center gap-2 group">
+                <div className="bg-[#266433] p-2 rounded-2xl group-hover:rotate-6 transition-transform shadow-md">
+                  <PawPrint className="w-7 h-7 text-[#CFD1FC] fill-[#CFD1FC]" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-brand font-black text-2xl md:text-3xl text-[#266433] leading-none tracking-tight">
+                    PATITA VERDE
+                  </span>
+                  <span className="text-[10px] font-black text-[#FE4811] tracking-widest uppercase">
+                    Nutrición Real • Amor Canino
+                  </span>
+                </div>
+              </a>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8">
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.id}
-                href={item.href}
-                className="font-bold text-sm tracking-wide text-slate-900 hover:text-slate-700 relative py-1 transition-colors group"
+              {/* Desktop Menu */}
+              <div className="hidden lg:flex items-center space-x-6">
+                {['PACKS', 'Tienda', 'Planes Personalizados', 'Nutricionistas', 'Puntos de Venta'].map((item, idx) => (
+                  <a
+                    key={idx}
+                    href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
+                    className={`text-sm font-bold transition-all duration-200 ${
+                      item === 'PACKS' 
+                        ? 'text-white bg-[#FE4811] hover:bg-[#FE4811]/90 px-4 py-1.5 rounded-full font-black shadow-sm hover:scale-105' 
+                        : 'text-[#266433] hover:text-[#4450FD]'
+                    }`}
+                  >
+                    {item}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="hidden md:flex items-center space-x-4">
+              <button 
+                onClick={() => setSearchOpen(!searchOpen)} 
+                aria-label="Buscar productos"
+                className="p-2.5 text-[#266433] hover:bg-white/60 rounded-full transition-colors"
               >
-                {item.label}
-                {item.badge && (
-                  <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full uppercase">
-                    {item.badge}
+                <Search className="w-5 h-5" />
+              </button>
+              
+              <a 
+                href="#cuenta" 
+                aria-label="Mi Cuenta"
+                className="p-2.5 text-[#266433] hover:bg-white/60 rounded-full transition-colors"
+              >
+                <User className="w-5 h-5" />
+              </a>
+
+              <button 
+                aria-label="Carrito de compras"
+                className="relative p-3 bg-[#266433] text-white rounded-full hover:bg-[#1f5028] transition-all shadow-md hover:scale-105"
+              >
+                <ShoppingBag className="w-5 h-5 text-[#CFD1FC]" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#FE4811] text-white font-black rounded-full text-[11px] w-5 h-5 flex items-center justify-center border-2 border-[#CFD1FC]">
+                    {cartCount}
                   </span>
                 )}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-slate-900 transition-all duration-300 group-hover:w-full" />
-              </a>
-            ))}
-          </nav>
+              </button>
+            </div>
 
-          {/* Right Action Icons */}
-          <div className="flex items-center gap-3 md:gap-5">
-            {/* Search Button */}
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="p-2.5 rounded-full text-slate-900 hover:bg-teal-500/30 transition-colors focus:outline-none"
-              aria-label="Buscar productos"
-            >
-              <Search className="w-5 h-5 stroke-[2.5]" />
-            </button>
+            {/* Mobile Hamburger Button */}
+            <div className="flex md:hidden items-center gap-3">
+              <button 
+                aria-label="Ver Carrito"
+                className="relative p-2.5 bg-[#266433] text-white rounded-full"
+              >
+                <ShoppingBag className="w-5 h-5 text-[#CFD1FC]" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#FE4811] text-white font-black text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 text-[#266433] hover:bg-white/50 rounded-xl"
+                aria-label="Abrir menú"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
 
-            {/* Account Icon */}
-            <button
-              className="p-2.5 rounded-full text-slate-900 hover:bg-teal-500/30 transition-colors hidden sm:flex focus:outline-none"
-              aria-label="Mi Cuenta"
-              onClick={() => showToast('Inicia sesión para gestionar tus pedidos')}
-            >
-              <User className="w-5 h-5 stroke-[2.5]" />
-            </button>
-
-            {/* Cart Button */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="p-2.5 rounded-full text-slate-900 hover:bg-teal-500/30 transition-colors relative focus:outline-none group"
-              aria-label="Ver Carrito"
-            >
-              <ShoppingBag className="w-6 h-6 stroke-[2.5] group-hover:scale-110 transition-transform" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-teal-400 shadow-md animate-pulse">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-
-            {/* Mobile Hamburger Toggle */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2.5 rounded-full text-slate-900 hover:bg-teal-500/30 md:hidden focus:outline-none"
-              aria-label="Abrir Menú"
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6 stroke-[2.5]" />
-              ) : (
-                <Menu className="w-6 h-6 stroke-[2.5]" />
-              )}
-            </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-teal-400 border-t border-teal-500/30 px-6 py-6 space-y-4 animate-fadeIn">
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.id}
-                href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block font-black text-lg text-slate-900 hover:text-slate-700 py-2 border-b border-teal-500/20"
-              >
-                {item.label}
-              </a>
-            ))}
-            <div className="pt-4 flex items-center justify-between text-slate-900 font-bold">
-              <span>Atención al Cliente</span>
-              <a
-                href="https://wa.me/#"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-black"
-              >
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
-              </a>
+        {/* Collapsible Search Bar */}
+        {searchOpen && (
+          <div className="bg-[#BEC1E5] border-t border-[#266433]/10 py-3 px-4 transition-all">
+            <div className="max-w-md mx-auto relative">
+              <input 
+                type="text" 
+                placeholder="Busca recetas de pavo, pollo, cordero..." 
+                className="w-full pl-10 pr-4 py-2.5 text-sm bg-white rounded-full text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#266433] shadow-inner font-medium"
+              />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
             </div>
           </div>
         )}
-      </header>
 
-      {/* ==========================================
-          3. HERO BANNER SECTION
-      ========================================== */}
-      <section className="relative bg-emerald-400 overflow-hidden min-h-[620px] flex items-center py-12 md:py-20 border-b border-emerald-500/30">
+        {/* Mobile Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-[#CFD1FC] border-t border-[#266433]/15 px-4 pt-3 pb-6 space-y-2 shadow-2xl">
+            {['PACKS', 'Tienda', 'Planes Personalizados', 'Nutricionistas', 'Puntos de Venta'].map((item, idx) => (
+              <a
+                key={idx}
+                href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
+                className="block px-4 py-3 rounded-xl font-extrabold text-[#266433] hover:bg-white/60 text-base"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item}
+              </a>
+            ))}
+          </div>
+        )}
+      </nav>
+
+      {}
+      <section className="relative bg-[#CFD1FC] overflow-hidden pt-8 pb-16 lg:py-20 border-b border-[#266433]/10">
         
-        {/* Background Decorative Accent Shapes (+ Graphics & Waves) */}
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-10 left-12 text-slate-900 text-6xl font-light">
-            +
-          </div>
-          <div className="absolute top-1/2 left-1/3 text-slate-900 text-5xl font-light">
-            +
-          </div>
-          <div className="absolute bottom-16 left-1/4 text-slate-900 text-7xl font-light">
-            +
-          </div>
-          <div className="absolute top-20 right-20 text-slate-900 text-6xl font-light">
-            +
-          </div>
-          <div className="absolute bottom-10 right-1/3 text-slate-900 text-4xl font-light">
-            +
-          </div>
+        {/* Floating Paw Decorations */}
+        <div className="absolute top-12 left-10 text-[#266433]/15 select-none pointer-events-none transform -rotate-12">
+          <PawPrint className="w-16 h-16" />
+        </div>
+        <div className="absolute top-1/2 right-8 text-[#266433]/15 select-none pointer-events-none transform rotate-45">
+          <PawPrint className="w-24 h-24" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[520px]">
             
-            {/* LEFT COLUMN: Visual Product Showcase & Foreground Basket */}
-            <div className="lg:col-span-7 relative order-2 lg:order-1 flex justify-center items-center">
-              
-              {/* Product Layout Wrapper */}
-              <div className="relative w-full max-w-lg aspect-square sm:aspect-[4/3] flex items-center justify-center">
+            {/* LEFT COLUMN: Visual Product Showcase */}
+            <div className="lg:col-span-7 relative order-2 lg:order-1">
+              <div className="relative mx-auto max-w-lg lg:max-w-none">
                 
-                {/* Background Soft Glow */}
-                <div className="absolute inset-0 bg-emerald-300/60 rounded-full blur-3xl scale-95" />
+                {/* Glow Shape */}
+                <div className="absolute w-80 h-80 bg-[#BEC1E5] rounded-full blur-3xl opacity-80 -z-10 animate-pulse" />
 
-                {/* Floating Product Cards Simulation */}
-                
-                {/* Main Package - BARF Res */}
-                <div className="absolute top-2 left-2 sm:left-6 w-44 sm:w-56 bg-slate-900 text-white rounded-2xl p-4 shadow-2xl rotate-[-6deg] hover:rotate-0 transition-transform duration-500 z-10 border border-emerald-300/30">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-black bg-rose-500 px-2 py-0.5 rounded text-white uppercase">
-                      CARNE DE RES
-                    </span>
-                    <span className="text-xs font-bold text-emerald-400">900g</span>
-                  </div>
-                  <div className="font-black text-xl tracking-tight mb-2 text-teal-300">
-                    BARKER
-                  </div>
-                  <div className="text-[11px] text-slate-300 mb-3">
-                    ALIMENTO COMPLETO BARF
-                  </div>
-                  <div className="w-full h-24 rounded-lg overflow-hidden relative">
-                    <img
-                      src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=400"
-                      alt="Dog happy"
-                      className="w-full h-full object-cover object-center"
+                {/* Main Hero Composite Box */}
+                <div className="relative w-full rounded-3xl bg-white/60 p-4 sm:p-6 backdrop-blur-md border-2 border-[#266433]/20 shadow-2xl">
+                  
+                  {/* Hero Dog Banner */}
+                  <div className="relative rounded-2xl overflow-hidden h-64 sm:h-80 shadow-lg border border-[#266433]/10">
+                    <img 
+                      src="https://images.unsplash.com/photo-1534361960057-19889db9621e?auto=format&fit=crop&q=80&w=1000" 
+                      alt="Perro feliz Patita Verde" 
+                      className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#266433]/90 via-transparent to-transparent" />
+                    
+                    {/* Badge */}
+                    <div className="absolute top-4 left-4 bg-[#266433] text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#FE4811]" />
+                      100% COCIDO & CONGELADO
+                    </div>
+
+                    <div className="absolute bottom-4 left-4 right-4 text-white">
+                      <span className="text-[11px] font-extrabold text-[#CFD1FC] uppercase tracking-widest block">
+                        Ingredientes Grado Humano
+                      </span>
+                      <p className="font-brand font-black text-xl sm:text-2xl leading-tight">
+                        Nutrición de verdad, amor en cada bocado
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Recipe Pouches Cards (Flavor Color Scheme) */}
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    
+                    {/* Item 1: Pavo (Rosa Fucsia) */}
+                    <div className="bg-white p-3 rounded-2xl shadow-md border border-[#266433]/10 flex flex-col items-center text-center transform -rotate-2 hover:rotate-0 transition-transform">
+                      <span className="w-3 h-3 rounded-full bg-[#EC2CC2] mb-1" />
+                      <span className="text-[11px] font-black text-[#266433] leading-tight font-brand">Receta Pavo</span>
+                      <span className="text-[10px] text-[#FE4811] font-extrabold mt-0.5">300g • S/ 18.90</span>
+                    </div>
+
+                    {/* Item 2: Pollo (Naranja Fuego) */}
+                    <div className="bg-white p-3 rounded-2xl shadow-md border border-[#266433]/10 flex flex-col items-center text-center transform rotate-2 hover:rotate-0 transition-transform">
+                      <span className="w-3 h-3 rounded-full bg-[#FE4811] mb-1" />
+                      <span className="text-[11px] font-black text-[#266433] leading-tight font-brand">Receta Pollo</span>
+                      <span className="text-[10px] text-[#FE4811] font-extrabold mt-0.5">300g • S/ 16.90</span>
+                    </div>
+
+                    {/* Item 3: Cordero (Violeta) */}
+                    <div className="bg-white p-3 rounded-2xl shadow-md border border-[#266433]/10 flex flex-col items-center text-center transform -rotate-1 hover:rotate-0 transition-transform">
+                      <span className="w-3 h-3 rounded-full bg-[#8247AF] mb-1" />
+                      <span className="text-[11px] font-black text-[#266433] leading-tight font-brand">Receta Cordero</span>
+                      <span className="text-[10px] text-[#FE4811] font-extrabold mt-0.5">300g • S/ 20.90</span>
+                    </div>
+
+                  </div>
+
                 </div>
 
-                {/* Secondary Package - Pollo Completo */}
-                <div className="absolute top-20 left-24 sm:left-40 w-40 sm:w-52 bg-teal-100 text-slate-900 rounded-2xl p-4 shadow-2xl rotate-[8deg] hover:rotate-0 transition-transform duration-500 z-20 border-2 border-slate-900">
-                  <div className="text-[10px] font-black bg-slate-900 text-white px-2 py-0.5 rounded inline-block mb-1">
-                    POLLO
+                {/* Floating Basket Indicator */}
+                <div className="absolute -bottom-6 -left-2 sm:left-4 bg-[#266433] text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white max-w-xs">
+                  <div className="bg-[#FE4811] p-2.5 rounded-xl text-white">
+                    <ShoppingBag className="w-6 h-6" />
                   </div>
-                  <div className="font-black text-lg tracking-tight text-slate-900">
-                    BARKER
-                  </div>
-                  <div className="text-[10px] text-slate-700 font-bold mb-2">
-                    NATURAL HOME
-                  </div>
-                  <div className="w-full h-20 rounded-md overflow-hidden">
-                    <img
-                      src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=300"
-                      alt="Dog 2"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* Snack Container */}
-                <div className="absolute top-6 right-2 sm:right-6 w-28 sm:w-36 bg-amber-200 text-slate-900 rounded-xl p-3 shadow-xl rotate-[-12deg] z-10 border border-slate-800">
-                  <div className="text-[9px] font-black uppercase text-amber-900">
-                    LONG LASTING
-                  </div>
-                  <div className="font-black text-sm text-slate-900">SNACKS</div>
-                  <div className="text-[10px] font-bold text-amber-800">100% Vacuno</div>
-                </div>
-
-                {/* Cans & Wipes */}
-                <div className="absolute bottom-16 right-8 sm:right-16 w-32 bg-sky-200 text-slate-900 rounded-lg p-3 shadow-lg rotate-[15deg] z-20 border border-slate-900">
-                  <div className="font-black text-xs">NATURAL HOME</div>
-                  <div className="text-[9px] font-semibold text-slate-700">Toallas Húmedas</div>
-                </div>
-
-                {/* Shopping Basket Foreground Icon Overlay */}
-                <div className="absolute -bottom-6 -left-4 sm:left-0 z-30 bg-slate-900 text-white p-5 rounded-3xl shadow-2xl border-4 border-emerald-400 flex items-center gap-4 animate-pulse">
-                  <ShoppingBag className="w-10 h-10 text-emerald-400 stroke-[2.5]" />
                   <div>
-                    <p className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
-                      Lleva tu Pack
-                    </p>
-                    <p className="text-base font-black text-white">
-                      Ahorra hasta un 20%
-                    </p>
+                    <span className="text-[10px] font-extrabold text-[#CFD1FC] uppercase tracking-wide block">Pack Quincenal</span>
+                    <p className="text-xs font-black text-white font-brand">14 Pouches + Envío Gratis</p>
                   </div>
                 </div>
 
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Brand Headline and Primary CTA */}
-            <div className="lg:col-span-5 order-1 lg:order-2 text-center lg:text-left space-y-6">
+            {/* RIGHT COLUMN: Brand Messaging */}
+            <div className="lg:col-span-5 order-1 lg:order-2 text-left">
               
-              {/* Secondary Brand Title */}
-              <div className="inline-flex items-center gap-2 bg-slate-900/10 px-4 py-1.5 rounded-full text-slate-900 font-extrabold text-xs tracking-widest uppercase">
-                <Sparkles className="w-4 h-4 text-slate-900" />
-                Alimentación Natural Premium
+              <div className="inline-flex items-center gap-2 bg-[#266433] text-white px-4 py-1.5 rounded-full mb-4 shadow-sm">
+                <PawPrint className="w-3.5 h-3.5 text-[#CFD1FC]" />
+                <span className="text-xs font-black tracking-widest uppercase">
+                  PLANES SEMANALES & MENSUALES
+                </span>
               </div>
 
-              {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
-                Packs pensados para <span className="underline decoration-rose-500 decoration-wavy decoration-2">consentirlos</span> mejor
+              <h1 className="font-brand text-[#266433] font-black text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-none mb-4">
+                Packs pensados para consentirlos mejor.
               </h1>
 
-              <p className="text-slate-800 font-medium text-base sm:text-lg max-w-lg mx-auto lg:mx-0">
-                Nutrición 100% fresca, balanceada y deliciosa. Diseñada por veterinarios para darles más años de vida y felicidad.
+              <p className="text-slate-800 text-base md:text-lg font-medium mb-8 leading-relaxed">
+                Comida 100% natural cocida al vacío y congelada. Sin preservantes, formulada por veterinarios especialistas en nutrición canina.
               </p>
 
-              {/* Primary Call to Action Button */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <a
-                  href="#best-sellers"
-                  className="w-full sm:w-auto bg-rose-500 hover:bg-rose-600 text-white font-black text-lg px-8 py-4 rounded-full shadow-2xl hover:shadow-rose-500/30 hover:scale-105 active:scale-95 transition-all duration-300 uppercase tracking-wider text-center flex items-center justify-center gap-3 border-2 border-rose-400/50"
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <a 
+                  href="#packs"
+                  className="inline-flex items-center justify-center bg-[#FE4811] hover:bg-[#e03d0d] text-white font-black text-base md:text-lg px-8 py-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 uppercase tracking-wider text-center group font-brand"
                 >
                   ¡DESCÚBRELOS AQUÍ!
-                  <ChevronRight className="w-6 h-6 stroke-[3]" />
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </a>
+
+                <a 
+                  href="#calculadora"
+                  className="inline-flex items-center justify-center bg-[#266433] hover:bg-[#1f5028] text-white font-bold text-sm px-6 py-4 rounded-full transition-all text-center"
+                >
+                  <Calculator className="w-4 h-4 mr-2 text-[#CFD1FC]" />
+                  Calcular Porción
                 </a>
               </div>
 
-              {/* Features List */}
-              <div className="pt-4 grid grid-cols-3 gap-2 text-left border-t border-slate-900/10">
-                <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
-                  <ShieldCheck className="w-4 h-4 text-slate-900 shrink-0" />
-                  <span>Sin preservantes</span>
+              {/* Badges */}
+              <div className="mt-10 pt-6 border-t border-[#266433]/15 grid grid-cols-3 gap-2 text-[#266433]">
+                <div className="flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-[#FE4811] shrink-0" />
+                  <span className="text-xs font-black">100% Fresco</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
-                  <CheckCircle className="w-4 h-4 text-slate-900 shrink-0" />
-                  <span>Formula BARF</span>
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#FE4811] shrink-0" />
+                  <span className="text-xs font-black">Aval Veterinario</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs font-black text-slate-900">
-                  <Truck className="w-4 h-4 text-slate-900 shrink-0" />
-                  <span>Delivery express</span>
+                <div className="flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-[#FE4811] shrink-0" />
+                  <span className="text-xs font-black">Cadena de Frío</span>
                 </div>
-              </div>
-
-              {/* Carousel Dot Indicators */}
-              <div className="flex items-center justify-center lg:justify-start gap-2 pt-2">
-                {[0, 1, 2].map((idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveSlide(idx)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      activeSlide === idx
-                        ? 'w-8 bg-slate-900'
-                        : 'w-2 bg-slate-900/30 hover:bg-slate-900/50'
-                    }`}
-                    aria-label={`Ir al banner ${idx + 1}`}
-                  />
-                ))}
               </div>
 
             </div>
@@ -594,284 +442,207 @@ export default function App() {
         </div>
       </section>
 
-      {/* ==========================================
-          4. CATEGORY QUICK SELECTOR BAR
-      ========================================== */}
-      <section className="bg-slate-900 py-6 text-white border-b border-slate-800">
+      {}
+      <section className="bg-[#266433] text-white py-6 border-y border-[#1f5028]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-start md:justify-center gap-3 overflow-x-auto pb-2 scrollbar-none">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                selectedCategory === 'all'
-                  ? 'bg-rose-500 text-white shadow-lg'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Todos los productos
-            </button>
-            <button
-              onClick={() => setSelectedCategory('packs')}
-              className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                selectedCategory === 'packs'
-                  ? 'bg-rose-500 text-white shadow-lg'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Packs Promocionales
-            </button>
-            <button
-              onClick={() => setSelectedCategory('food')}
-              className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                selectedCategory === 'food'
-                  ? 'bg-rose-500 text-white shadow-lg'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Alimento BARF
-            </button>
-            <button
-              onClick={() => setSelectedCategory('snacks')}
-              className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                selectedCategory === 'snacks'
-                  ? 'bg-rose-500 text-white shadow-lg'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Snacks y Premios
-            </button>
-            <button
-              onClick={() => setSelectedCategory('hygiene')}
-              className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                selectedCategory === 'hygiene'
-                  ? 'bg-rose-500 text-white shadow-lg'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Higiene Natural
-            </button>
-            <button
-              onClick={() => setSelectedCategory('cans')}
-              className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                selectedCategory === 'cans'
-                  ? 'bg-rose-500 text-white shadow-lg'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Comida Enlatada
-            </button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-white/10">
+            <div className="px-2">
+              <span className="font-brand block text-[#CFD1FC] font-black text-2xl md:text-3xl">+10,000</span>
+              <span className="text-xs text-white/80 font-bold uppercase">Platos Servidos</span>
+            </div>
+            <div className="px-2">
+              <span className="font-brand block text-[#CFD1FC] font-black text-2xl md:text-3xl">0%</span>
+              <span className="text-xs text-[#CFD1FC]/80 font-bold uppercase">Preservantes</span>
+            </div>
+            <div className="px-2">
+              <span className="font-brand block text-[#CFD1FC] font-black text-2xl md:text-3xl">4.9 ★</span>
+              <span className="text-xs text-white/80 font-bold uppercase">Opinión de Papás Patita</span>
+            </div>
+            <div className="px-2">
+              <span className="font-brand block text-[#CFD1FC] font-black text-2xl md:text-3xl">24/48h</span>
+              <span className="text-xs text-white/80 font-bold uppercase">Delivery Refrigerado</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ==========================================
-          5. BEST SELLERS PRODUCT GRID SECTION
-      ========================================== */}
-      <section id="best-sellers" className="bg-white py-16 lg:py-24">
+      {}
+      <section id="calculadora" className="py-16 bg-[#BEC1E5]/30 border-b border-[#266433]/10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-xl border-2 border-[#266433]/15">
+            
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-widest inline-block mb-2">
+                RECOMENDADOR DE PLANES
+              </span>
+              <h2 className="font-brand text-[#266433] font-black text-3xl sm:text-4xl">
+                ¿Cuántos gramos necesita tu engreído?
+              </h2>
+              <p className="text-slate-600 text-sm mt-2">
+                Calcula la ración diaria exacta según su peso y nivel de actividad.
+              </p>
+            </div>
+
+            <form onSubmit={handleCalculate} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+              <div>
+                <label className="block text-xs font-extrabold text-[#266433] uppercase tracking-wider mb-2">
+                  Peso de tu perro (KG)
+                </label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  max="70"
+                  value={dogWeight}
+                  onChange={(e) => setDogWeight(Number(e.target.value))}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-[#266433]/20 font-extrabold text-slate-800 focus:outline-none focus:border-[#266433]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-[#266433] uppercase tracking-wider mb-2">
+                  Nivel de Actividad
+                </label>
+                <select 
+                  value={activity}
+                  onChange={(e) => setActivity(e.target.value as any)}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-[#266433]/20 font-bold text-slate-800 focus:outline-none focus:border-[#266433]"
+                >
+                  <option value="low">Tranquilo / Paseos cortos</option>
+                  <option value="medium">Actividad Normal (1 hora/día)</option>
+                  <option value="high">Súper Activo / Deporte</option>
+                </select>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full bg-[#266433] hover:bg-[#1f5028] text-white font-brand font-black py-3.5 px-6 rounded-2xl shadow-md transition-transform hover:scale-105"
+              >
+                CALCULAR RACIÓN
+              </button>
+            </form>
+
+            {calcResult && (
+              <div className="mt-8 pt-6 border-t border-slate-100 bg-[#CFD1FC]/40 p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-[#FE4811] text-white rounded-2xl">
+                    <Flame className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-[#266433] uppercase tracking-wide block">Ración Diaria Recomendada</span>
+                    <span className="font-brand text-2xl font-black text-[#266433]">{calcResult} Gramos / día</span>
+                    <span className="text-xs text-slate-600 block">(Dividido en 2 porciones de {Math.round(calcResult / 2)}g)</span>
+                  </div>
+                </div>
+
+                <a 
+                  href={`https://wa.me/51999999999?text=Hola%20Patita%20Verde,%20mi%20perro%20pesa%20${dogWeight}kg%20y%20necesita%20${calcResult}g%20diarios.%20Quiero%20asesoría.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-[#FE4811] hover:bg-[#e03d0d] text-white font-brand text-xs font-black px-6 py-3 rounded-full shadow-md whitespace-nowrap"
+                >
+                  PEDIR PLAN POR WHATSAPP
+                </a>
+              </div>
+            )}
+
+          </div>
+        </div>
+      </section>
+
+      {}
+      <section className="bg-white py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
-            <span className="text-xs font-black text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded-full">
-              Favoritos de la comunidad
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs tracking-widest uppercase px-3.5 py-1 rounded-full border border-[#266433]/20">
+              RECETAS 100% NATURALES
             </span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 uppercase tracking-tight mt-3">
-              Nuestros Best Sellers
+            <h2 className="font-brand text-[#266433] font-black text-3xl sm:text-5xl py-3 uppercase tracking-wide">
+              NUESTROS BEST SELLERS
             </h2>
-            <div className="w-20 h-1.5 bg-emerald-400 mx-auto mt-4 rounded-full" />
+            <div className="w-16 h-1.5 bg-[#FE4811] mx-auto rounded-full mb-3" />
+            <p className="text-slate-600 text-sm md:text-base font-medium">
+              Alimento cocido al vapor suave para conservar nutrientes y sabor. ¡Ideal para perros exigentes!
+            </p>
           </div>
 
           {/* Product Cards Grid */}
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-16 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-              <p className="text-slate-500 font-bold text-lg">
-                No se encontraron productos en esta categoría.
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedCategory('all');
-                  setSearchQuery('');
-                }}
-                className="mt-4 bg-slate-900 text-white px-6 py-2.5 rounded-full text-sm font-black uppercase hover:bg-slate-800 transition-colors"
-              >
-                Ver todos los productos
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col group relative"
-                >
-                  {/* Badge */}
-                  {product.tag && (
-                    <div className="absolute top-4 left-4 z-20">
-                      <span
-                        className={`text-[10px] font-black px-3 py-1 rounded-full shadow-sm tracking-wider uppercase ${product.badgeColor}`}
-                      >
-                        {product.tag}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Favorite Button */}
-                  <button
-                    onClick={() => showToast(`Guardado ${product.name} en favoritos`)}
-                    className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center text-slate-700 hover:text-rose-500 hover:bg-white transition-colors"
-                    aria-label="Agregar a favoritos"
-                  >
-                    <Heart className="w-5 h-5 stroke-[2]" />
-                  </button>
-
-                  {/* Product Visual Container */}
-                  <div
-                    className={`relative w-full h-64 ${product.imageBg} p-6 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500`}
-                  >
-                    {/* Dog Background Thumbnail */}
-                    {product.dogImage && (
-                      <img
-                        src={product.dogImage}
-                        alt={product.name}
-                        className="w-full h-full object-cover object-center opacity-90 group-hover:opacity-100 transition-opacity"
-                      />
-                    )}
-                    
-                    {/* Overlay Label Mockup */}
-                    <div className="absolute inset-x-4 bottom-4 bg-slate-900/85 backdrop-blur-md text-white p-3 rounded-2xl border border-white/20 text-center">
-                      <p className="font-black text-sm tracking-wide text-emerald-400 uppercase">
-                        {product.name}
-                      </p>
-                      <p className="text-[10px] text-slate-300">
-                        Fórmula 100% Fresca & Nutritiva
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Product Info & Action */}
-                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                    <div>
-                      {/* Rating */}
-                      <div className="flex items-center gap-1 mb-2">
-                        <div className="flex text-amber-400">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className="w-4 h-4 fill-amber-400 stroke-none"
-                            />
-                          ))}
-                        </div>
-                        <span className="text-xs font-bold text-slate-700 ml-1">
-                          {product.rating} ({product.reviewsCount})
-                        </span>
-                      </div>
-
-                      <h3 className="font-black text-lg text-slate-900 leading-snug group-hover:text-emerald-600 transition-colors">
-                        {product.name}
-                      </h3>
-
-                      <p className="text-slate-600 text-xs mt-1 line-clamp-2">
-                        {product.description}
-                      </p>
-                    </div>
-
-                    {/* Price and Add to Cart Button */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                      <div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-2xl font-black text-slate-900">
-                            S/ {product.price.toFixed(2)}
-                          </span>
-                          {product.originalPrice && (
-                            <span className="text-xs font-bold text-slate-400 line-through">
-                              S/ {product.originalPrice.toFixed(2)}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] font-semibold text-emerald-600">
-                          Stock Disponible
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() => addToCart(product)}
-                        className="bg-slate-900 hover:bg-emerald-500 text-white font-black px-4 py-3 rounded-2xl flex items-center gap-2 transition-all duration-300 shadow-md hover:shadow-emerald-500/20 active:scale-95 text-xs uppercase"
-                      >
-                        <Plus className="w-4 h-4 stroke-[3]" />
-                        Agregar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* View All Store Banner */}
-          <div className="mt-16 bg-emerald-100 rounded-3xl p-8 sm:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 border-2 border-emerald-300/60 shadow-lg">
-            <div className="space-y-2">
-              <span className="text-xs font-black bg-emerald-700 text-white px-3 py-1 rounded-full uppercase tracking-wider">
-                Nutrición Personalizada
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
-                ¿No sabes qué alimento elegir para tu peludo?
-              </h3>
-              <p className="text-slate-700 text-sm max-w-xl font-medium">
-                Responde nuestro test interactivo de 2 minutos y te recomendaremos el plan perfecto según su edad, peso y actividad física.
-              </p>
-            </div>
-            <a
-              href="#planes"
-              className="bg-slate-900 hover:bg-slate-800 text-white font-black px-8 py-4 rounded-full text-sm uppercase tracking-wider shrink-0 transition-all shadow-xl hover:scale-105"
-            >
-              CREAR PLAN PERSONALIZADO
-            </a>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ==========================================
-          6. TESTIMONIALS SECTION
-      ========================================== */}
-      <section className="bg-slate-900 py-16 text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">
-              Comunidad BARKER
-            </span>
-            <h2 className="text-3xl font-black tracking-tight mt-2 text-white">
-              Lo que dicen sus humanos
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.id}
-                className="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl flex flex-col justify-between relative"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {BEST_SELLERS.map((product) => (
+              <div 
+                key={product.id}
+                className="group relative bg-[#F8FAFC] rounded-3xl p-4 border-2 border-slate-100 hover:border-[#266433] transition-all duration-300 hover:shadow-2xl flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex text-amber-400 mb-4">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 stroke-none" />
-                    ))}
+                  {/* Image Container */}
+                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-white">
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                    />
+                    
+                    {/* Badge */}
+                    <span className={`absolute top-2 left-2 ${product.badgeBg} text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md uppercase tracking-wider`}>
+                      {product.badge}
+                    </span>
+
+                    {/* Wishlist Button */}
+                    <button 
+                      aria-label="Guardar en favoritos"
+                      className="absolute top-2 right-2 p-2 bg-white/80 backdrop-blur-sm rounded-full text-slate-700 hover:text-[#FE4811] hover:bg-white transition-colors"
+                    >
+                      <Heart className="w-4 h-4" />
+                    </button>
                   </div>
-                  <p className="text-slate-300 text-sm italic mb-6">"{t.comment}"</p>
+
+                  {/* Category */}
+                  <span className="text-[11px] font-black text-[#266433] uppercase tracking-wider block mb-1">
+                    {product.category}
+                  </span>
+
+                  <h3 className="font-brand font-black text-slate-900 text-lg leading-snug mb-1 group-hover:text-[#266433] transition-colors">
+                    {product.name}
+                  </h3>
+
+                  <p className="text-xs text-slate-500 font-bold mb-3">
+                    {product.flavorTag} • <span className="text-[#FE4811]">{product.portionSize}</span>
+                  </p>
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-1.5 mb-4">
+                    <div className="flex text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <span className="text-xs font-black text-slate-700">{product.rating}</span>
+                    <span className="text-[11px] text-slate-400">({product.reviews})</span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-700/60">
-                  <div className={`w-10 h-10 rounded-full ${t.avatarBg} flex items-center justify-center font-black text-white text-sm`}>
-                    {t.author.charAt(0)}
-                  </div>
+                {/* Price & Action */}
+                <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between mt-2">
                   <div>
-                    <p className="font-bold text-sm text-white">{t.author}</p>
-                    <p className="text-xs text-emerald-400 font-medium">
-                      Humano de <span className="font-bold">{t.petName}</span> ({t.petBreed})
-                    </p>
+                    <span className="text-xs text-slate-400 line-through block font-medium">
+                      {product.originalPrice}
+                    </span>
+                    <span className="font-brand text-xl font-black text-[#266433]">
+                      {product.price}
+                    </span>
                   </div>
+
+                  <button 
+                    onClick={addToCart}
+                    aria-label={`Añadir ${product.name} al carrito`}
+                    className="bg-[#266433] hover:bg-[#FE4811] text-white p-3 rounded-2xl transition-colors duration-200 shadow-md group/btn"
+                  >
+                    <ShoppingBag className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                  </button>
                 </div>
+
               </div>
             ))}
           </div>
@@ -879,332 +650,108 @@ export default function App() {
         </div>
       </section>
 
-      {/* ==========================================
-          7. FOOTER SECTION
-      ========================================== */}
-      <footer className="bg-slate-950 text-slate-400 text-sm pt-16 pb-12 border-t border-slate-800">
+      {}
+      <footer className="bg-[#266433] text-white pt-16 pb-12 border-t border-[#1f5028]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
             
-            {/* Brand Col */}
+            {/* Brand column */}
             <div className="space-y-4">
-              <a href="#" className="flex items-center gap-1">
-                <span className="font-black text-3xl text-white tracking-tighter">
-                  BARKER
+              <div className="flex items-center gap-2">
+                <PawPrint className="w-6 h-6 text-[#CFD1FC]" />
+                <span className="font-brand font-black text-2xl text-white tracking-tight">
+                  PATITA VERDE®
                 </span>
-                <span className="text-xs font-bold text-emerald-400">®</span>
-              </a>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Alimentación biológicamente apropiada para perros y gatos. Ingredientes 100% naturales, frescos y sin químicos añadidos.
+              </div>
+              <p className="text-xs text-[#CFD1FC]/80 leading-relaxed">
+                Alimentación de verdad para tu perro. Recetas cocidas al vapor con ingredientes reales y aval veterinario.
               </p>
             </div>
 
-            {/* Links 1 */}
+            {/* Quick links */}
             <div>
-              <h4 className="font-black text-white uppercase text-xs tracking-wider mb-4">
-                Navegación
+              <h4 className="font-brand font-black text-sm uppercase tracking-wider mb-4 text-[#CFD1FC]">
+                Nuestros Menús
               </h4>
-              <ul className="space-y-2 text-xs font-medium">
-                <li><a href="#packs" className="hover:text-emerald-400 transition-colors">Packs Especiales</a></li>
-                <li><a href="#tienda" className="hover:text-emerald-400 transition-colors">Tienda Completa</a></li>
-                <li><a href="#planes" className="hover:text-emerald-400 transition-colors">Planes Mensuales</a></li>
-                <li><a href="#puntos" className="hover:text-emerald-400 transition-colors">Puntos de Venta</a></li>
+              <ul className="space-y-2.5 text-xs font-bold text-white/90">
+                <li><a href="#" className="hover:text-[#CFD1FC]">Recetas de Pollo</a></li>
+                <li><a href="#" className="hover:text-[#CFD1FC]">Recetas de Pavo</a></li>
+                <li><a href="#" className="hover:text-[#CFD1FC]">Recetas de Cordero</a></li>
+                <li><a href="#" className="hover:text-[#CFD1FC]">Packs Mensuales</a></li>
               </ul>
             </div>
 
-            {/* Links 2 */}
+            {/* Support */}
             <div>
-              <h4 className="font-black text-white uppercase text-xs tracking-wider mb-4">
+              <h4 className="font-brand font-black text-sm uppercase tracking-wider mb-4 text-[#CFD1FC]">
                 Atención al Cliente
               </h4>
-              <ul className="space-y-2 text-xs font-medium">
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Preguntas Frecuentes</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Políticas de Envío</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Términos y Condiciones</a></li>
-                <li><a href="#" className="hover:text-emerald-400 transition-colors">Libro de Reclamaciones</a></li>
+              <ul className="space-y-2.5 text-xs font-bold text-white/90">
+                <li><a href="#" className="hover:text-[#CFD1FC]">Preguntas Frecuentes</a></li>
+                <li><a href="#" className="hover:text-[#CFD1FC]">Zonas de Delivery Lima</a></li>
+                <li><a href="#" className="hover:text-[#CFD1FC]">Políticas de Frío</a></li>
+                <li><a href="#" className="hover:text-[#CFD1FC]">Libro de Reclamaciones</a></li>
               </ul>
             </div>
 
             {/* Newsletter */}
             <div>
-              <h4 className="font-black text-white uppercase text-xs tracking-wider mb-4">
-                Únete al Club Barker
+              <h4 className="font-brand font-black text-sm uppercase tracking-wider mb-4 text-[#CFD1FC]">
+                Familia Patita Verde
               </h4>
-              <p className="text-xs text-slate-400 mb-3">
-                Recibe 10% de descuento en tu primera compra y consejos de salud canina.
-              </p>
-              <form onSubmit={(e) => { e.preventDefault(); showToast('¡Suscrito con éxito!'); }} className="space-y-2">
-                <input
-                  type="email"
-                  placeholder="Tu correo electrónico"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
-                  required
+              <p className="text-xs text-white/80 mb-3">Recibe consejos de nutrición canina y 10% OFF en tu primer pedido.</p>
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-2">
+                <input 
+                  type="email" 
+                  placeholder="Tu correo electrónico" 
+                  className="w-full bg-[#1f5028] border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/50 focus:outline-none focus:border-[#CFD1FC]"
                 />
-                <button
-                  type="submit"
-                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2.5 rounded-xl uppercase tracking-wider transition-colors"
-                >
-                  Suscribirme
+                <button className="w-full bg-[#FE4811] hover:bg-[#e03d0d] text-white font-brand font-black text-xs py-3 rounded-xl transition-colors uppercase tracking-wider">
+                  SUSCRIBIRME
                 </button>
               </form>
             </div>
 
           </div>
 
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-            <p>© {new Date().getFullYear()} BARKER Peru. Todos los derechos reservados.</p>
-            <div className="flex gap-4">
-              <span>Arequipa - Lima - Cusco</span>
-            </div>
+          <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-[#CFD1FC]/70 gap-4">
+            <p>© 2026 PATITA VERDE. Todos los derechos reservados.</p>
+            <p className="flex items-center gap-1.5">
+              Hecho con <Heart className="w-3.5 h-3.5 text-[#FE4811] fill-[#FE4811]" /> para perritos felices.
+            </p>
           </div>
         </div>
       </footer>
 
-      {/* ==========================================
-          8. FLOATING SUPPORT WIDGET (WHATSAPP)
-      ========================================== */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
-        {/* Help Tooltip */}
-        <div className="hidden sm:flex bg-white text-slate-900 text-xs font-black px-4 py-2 rounded-2xl shadow-xl border border-slate-100 items-center gap-2 animate-pulse">
-          <span>¿Necesitas ayuda con tu pedido? 👋</span>
-        </div>
-
-        {/* Floating WhatsApp Button */}
-        <a
-          href="https://wa.me/#"
-          target="_blank"
-          rel="noreferrer"
-          className="bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center border-2 border-white"
-          aria-label="Contactar por WhatsApp"
-        >
-          <MessageCircle className="w-7 h-7 stroke-[2.5]" />
-        </a>
-      </div>
-
-      {/* ==========================================
-          9. SHOPPING CART DRAWER (SIDE MODAL)
-      ========================================== */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          {/* Backdrop */}
-          <div
-            onClick={() => setIsCartOpen(false)}
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fadeIn"
-          />
-
-          {/* Drawer Content */}
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between z-10 animate-slideLeft">
-            
-            {/* Drawer Header */}
-            <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-6 h-6 text-emerald-400" />
-                <h3 className="font-black text-lg uppercase tracking-wider">
-                  Tu Carrito ({cartItemCount})
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="p-1 rounded-full text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Free Shipping Progress Indicator */}
-            <div className="bg-emerald-50 p-4 border-b border-emerald-100">
-              {hasFreeShipping ? (
-                <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>¡Felicidades! Tienes envío GRATIS garantizado.</span>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-xs font-bold text-slate-700 mb-1">
-                    Te faltan <span className="text-rose-500 font-black">S/ {freeShippingRemaining.toFixed(2)}</span> para envío GRATIS
-                  </p>
-                  <div className="w-full h-2 bg-emerald-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 transition-all duration-300"
-                      style={{
-                        width: `${Math.min(100, (cartSubtotal / freeShippingThreshold) * 100)}%`
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Cart Items List */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {cart.length === 0 ? (
-                <div className="text-center py-16 text-slate-400 space-y-4">
-                  <ShoppingBag className="w-16 h-16 mx-auto stroke-1 text-slate-300" />
-                  <p className="font-bold text-slate-600">Tu carrito está vacío</p>
-                  <button
-                    onClick={() => setIsCartOpen(false)}
-                    className="bg-rose-500 text-white font-black px-6 py-3 rounded-full text-xs uppercase tracking-wider hover:bg-rose-600 transition-colors"
-                  >
-                    Ir a la tienda
-                  </button>
-                </div>
-              ) : (
-                cart.map(({ product, quantity }) => (
-                  <div
-                    key={product.id}
-                    className="flex gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 items-center"
-                  >
-                    <div className={`w-16 h-16 rounded-xl ${product.imageBg} flex items-center justify-center shrink-0 overflow-hidden`}>
-                      {product.dogImage && (
-                        <img
-                          src={product.dogImage}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-black text-sm text-slate-900 truncate">
-                        {product.name}
-                      </h4>
-                      <p className="text-xs text-slate-500 font-medium">
-                        S/ {product.price.toFixed(2)} c/u
-                      </p>
-
-                      <div className="flex items-center gap-2 mt-2">
-                        <button
-                          onClick={() => updateQuantity(product.id, -1)}
-                          className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-xs font-black text-slate-900 px-1">
-                          {quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(product.id, 1)}
-                          className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="font-black text-sm text-slate-900">
-                        S/ {(product.price * quantity).toFixed(2)}
-                      </p>
-                      <button
-                        onClick={() => removeFromCart(product.id)}
-                        className="text-rose-500 hover:text-rose-700 p-1 mt-1"
-                        aria-label="Eliminar producto"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Cart Footer */}
-            {cart.length > 0 && (
-              <div className="p-6 bg-slate-50 border-t border-slate-200 space-y-4">
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Subtotal</span>
-                    <span>S/ {cartSubtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Envío</span>
-                    <span>{hasFreeShipping ? 'GRATIS' : 'S/ 10.00'}</span>
-                  </div>
-                  <div className="flex justify-between font-black text-lg text-slate-900 pt-2 border-t border-slate-200">
-                    <span>Total</span>
-                    <span className="text-rose-600">
-                      S/ {(cartSubtotal + (hasFreeShipping ? 0 : 10)).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    alert('¡Gracias por tu compra! Procesando pedido de demostración.');
-                    setCart([]);
-                    setIsCartOpen(false);
-                  }}
-                  className="w-full bg-rose-500 hover:bg-rose-600 text-white font-black text-sm py-4 rounded-full shadow-lg uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
-                >
-                  FINALIZAR COMPRA
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
-
-      {/* ==========================================
-          10. SEARCH OVERLAY MODAL
-      ========================================== */}
-      {isSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-start justify-center pt-20 px-4 animate-fadeIn">
-          <div className="bg-white w-full max-w-2xl rounded-3xl p-6 shadow-2xl relative">
-            <button
-              onClick={() => setIsSearchOpen(false)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700"
+      {}
+      <div className="fixed bottom-6 right-6 z-50 flex items-center group">
+        
+        {/* Tooltip */}
+        {showTooltip && (
+          <div className="relative bg-white text-slate-800 text-xs font-extrabold px-4 py-2.5 rounded-2xl shadow-2xl mr-3 border-2 border-[#266433]/20 flex items-center gap-2">
+            <span>¿Tienes dudas sobre la ración de tu perrito? 👋</span>
+            <button 
+              onClick={() => setShowTooltip(false)} 
+              className="text-slate-400 hover:text-slate-600 p-0.5"
+              aria-label="Cerrar ayuda"
             >
-              <X className="w-6 h-6" />
+              <X className="w-3.5 h-3.5" />
             </button>
-
-            <h3 className="font-black text-xl text-slate-900 mb-4 uppercase">
-              Buscar en BARKER
-            </h3>
-
-            <div className="relative mb-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Busca comida BARF, snacks, toallitas..."
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-100 rounded-2xl text-slate-900 font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                autoFocus
-              />
-            </div>
-
-            <div className="max-h-60 overflow-y-auto space-y-2">
-              {PRODUCTS.filter((p) =>
-                p.name.toLowerCase().includes(searchQuery.toLowerCase())
-              ).map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    setIsSearchOpen(false);
-                    addToCart(p);
-                  }}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-100 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg ${p.imageBg} flex items-center justify-center font-black text-xs text-slate-700`}>
-                      {p.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-black text-sm text-slate-900">{p.name}</p>
-                      <p className="text-xs text-slate-500">S/ {p.price.toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-rose-500 hover:underline">
-                    + Agregar
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* WhatsApp Button */}
+        <a 
+          href="https://wa.me/51999999999" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          aria-label="Contactar por WhatsApp"
+          className="bg-[#25D366] hover:bg-[#20ba5a] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 flex items-center justify-center border-2 border-white"
+        >
+          <MessageCircle className="w-6 h-6 fill-white text-[#25D366]" />
+        </a>
+
+      </div>
 
     </div>
   );
