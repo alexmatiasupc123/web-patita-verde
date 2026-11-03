@@ -23,6 +23,7 @@ export interface RecetaPlan {
   proteinType: 'pollo' | 'pavo' | 'cordero' | 'pescado';
 }
 
+/* --- FASE 2: INTERFAZ DEL CARRITO (COMENTADA) ---
 export interface CartItem {
   id: string;
   productId: number;
@@ -32,6 +33,7 @@ export interface CartItem {
   quantity: number;
   image: string;
 }
+*/
 
 export interface MascotaCalculadora {
   nombre: string;
@@ -116,7 +118,7 @@ const ScrollToTop = () => {
 };
 
 // --- SUB-COMPONENTS (VIEWS) ---
-const HomeView = ({ addToCart }: { addToCart: any }) => (
+const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
   <>
     <section className="relative bg-[#CFD1FC] overflow-hidden pt-8 pb-16 lg:py-20 border-b border-[#266433]/10">
       <div className="absolute top-12 left-10 text-[#266433]/15 select-none pointer-events-none transform -rotate-12">
@@ -240,8 +242,9 @@ const HomeView = ({ addToCart }: { addToCart: any }) => (
               <p className="text-xs text-slate-500 font-bold mb-3 font-montserrat">{product.flavorTag}</p>
               <div className="mt-auto pt-3 flex items-center justify-between">
                 <span className="font-fantony text-xl font-black text-[#266433]">S/ {product.price300.toFixed(2)}</span>
-                <button onClick={() => addToCart(product, '300g')} className="bg-[#266433] hover:bg-[#FE4811] text-white p-2.5 rounded-xl transition-colors shadow-md">
-                  <ShoppingBag className="w-4 h-4" />
+                {/* Modificado para redirigir a WhatsApp en Fase 1 */}
+                <button onClick={() => handleWhatsAppOrder(product.name, '300g')} className="bg-[#266433] hover:bg-[#25D366] text-white p-2.5 rounded-xl transition-colors shadow-md">
+                  <MessageCircle className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -252,7 +255,7 @@ const HomeView = ({ addToCart }: { addToCart: any }) => (
   </>
 );
 
-const PlanesView = ({ addToCart }: { addToCart: any }) => (
+const PlanesView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
   <section className="bg-[#F8FAFC] py-12 lg:py-20 min-h-screen">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center max-w-2xl mx-auto mb-14">
@@ -292,25 +295,26 @@ const PlanesView = ({ addToCart }: { addToCart: any }) => (
               <p className="text-xs text-slate-600 mb-4 leading-relaxed font-montserrat"><strong className="text-slate-800">Ingredientes:</strong> {receta.ingredients}</p>
               
               <div className="mt-auto space-y-3 font-montserrat">
-                <div className="flex items-center justify-between p-3 border-2 border-slate-100 rounded-xl hover:border-[#266433]/30 cursor-pointer group" onClick={() => addToCart(receta, '180g')}>
+                {/* Modificados para abrir WhatsApp en lugar de agregar a carrito en Fase 1 */}
+                <div className="flex items-center justify-between p-3 border-2 border-slate-100 rounded-xl hover:border-[#25D366] cursor-pointer group" onClick={() => handleWhatsAppOrder(receta.name, '180g')}>
                   <div>
-                    <span className="block font-black text-slate-900 text-sm">Empaque Pequeño (180g)</span>
+                    <span className="block font-black text-slate-900 text-sm group-hover:text-[#25D366] transition-colors">Empaque Pequeño (180g)</span>
                     <span className="text-xs text-slate-500 font-medium">Ideal para perros pequeños o gatos</span>
                   </div>
                   <div className="text-right flex items-center gap-3">
                     <span className="font-fantony font-black text-[#FE4811] text-lg">S/ {receta.price180.toFixed(2)}</span>
-                    <div className="bg-slate-100 p-2 rounded-lg group-hover:bg-[#266433] group-hover:text-white transition-colors"><Plus className="w-4 h-4"/></div>
+                    <div className="bg-slate-100 p-2 rounded-lg group-hover:bg-[#25D366] group-hover:text-white transition-colors"><MessageCircle className="w-4 h-4"/></div>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 border-2 border-[#266433]/20 bg-[#CFD1FC]/20 rounded-xl hover:border-[#266433] cursor-pointer group" onClick={() => addToCart(receta, '300g')}>
+                <div className="flex items-center justify-between p-3 border-2 border-[#266433]/20 bg-[#CFD1FC]/20 rounded-xl hover:border-[#25D366] hover:bg-white cursor-pointer group transition-all" onClick={() => handleWhatsAppOrder(receta.name, '300g')}>
                   <div>
-                    <span className="block font-black text-[#266433] text-sm">Empaque Regular (300g)</span>
-                    <span className="text-xs text-[#266433]/70 font-bold">Mejor valor nutricional/precio</span>
+                    <span className="block font-black text-[#266433] text-sm group-hover:text-[#25D366]">Empaque Regular (300g)</span>
+                    <span className="text-xs text-[#266433]/70 font-bold group-hover:text-[#25D366]/70">Mejor valor nutricional/precio</span>
                   </div>
                   <div className="text-right flex items-center gap-3">
                     <span className="font-fantony font-black text-[#266433] text-xl">S/ {receta.price300.toFixed(2)}</span>
-                    <div className="bg-[#266433] text-white p-2 rounded-lg group-hover:bg-[#FE4811] transition-colors"><Plus className="w-4 h-4"/></div>
+                    <div className="bg-[#266433] text-white p-2 rounded-lg group-hover:bg-[#25D366] transition-colors"><MessageCircle className="w-4 h-4"/></div>
                   </div>
                 </div>
               </div>
@@ -456,15 +460,12 @@ export default function App() {
 function MainLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
-  const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Cerrar menú móvil al cambiar de ruta
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+  /* --- FASE 2: ESTADOS DEL CARRITO COMENTADOS --- 
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const addToCart = (receta: RecetaPlan, size: '180g' | '300g') => {
     const price = size === '180g' ? receta.price180 : receta.price300;
@@ -477,6 +478,18 @@ function MainLayout() {
 
   const removeFromCart = (id: string) => setCart(prev => prev.filter(item => item.id !== id));
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  */
+
+  // --- FASE 1: Redirección directa a WhatsApp
+  const handleWhatsAppOrder = (productName: string, size: string) => {
+    const text = `¡Hola Patita Verde! 🐾 Quiero pedir la ${productName} en presentación de ${size}. ¿Me ayudan con mi pedido?`;
+    window.open(`https://wa.me/51999999999?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  // Cerrar menú móvil al cambiar de ruta
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // Helper para clases activas en Navbar
   const getNavClass = (path: string) => {
@@ -511,11 +524,10 @@ function MainLayout() {
             {/* Logo */}
             <div className="flex items-center gap-6 lg:gap-10">
               <Link to="/" className="flex items-center gap-2 group text-left">
-                {/* Nuevo Logo Integrado */}
                 <img 
-                  src="img/Logotipos-sinslogan-01.png" // Asegúrate de que la ruta sea correcta
+                  src="img/Logotipos-sinslogan-01.png" 
                   alt="Logo Patita Verde" 
-                  className="h-36 w-auto object-contain group-hover:scale-105 transition-transform duration-300" // Ajusta h-16 según el tamaño deseado
+                  className="h-36 w-auto object-contain group-hover:scale-105 transition-transform duration-300" 
                 />
               </Link>
 
@@ -533,12 +545,14 @@ function MainLayout() {
 
             {/* Actions */}
             <div className="hidden md:flex items-center space-x-4">
-              {/* <button onClick={() => setSearchOpen(!searchOpen)} className="p-2.5 text-[#266433] hover:bg-white/60 rounded-full transition-colors">
+              {/* --- FASE 2: BOTONES DE BUSCADOR, USUARIO Y CARRITO COMENTADOS --- */}
+              {/* 
+              <button onClick={() => setSearchOpen(!searchOpen)} className="p-2.5 text-[#266433] hover:bg-white/60 rounded-full transition-colors">
                 <Search className="w-5 h-5" />
               </button>
               <button className="p-2.5 text-[#266433] hover:bg-white/60 rounded-full transition-colors">
                 <User className="w-5 h-5" />
-              </button> */}
+              </button>
               <button onClick={() => setCartOpen(true)} className="relative p-3 bg-[#266433] text-white rounded-full hover:bg-[#1f5028] transition-all shadow-md hover:scale-105">
                 <ShoppingBag className="w-5 h-5 text-[#CFD1FC]" />
                 {cart.length > 0 && (
@@ -546,15 +560,19 @@ function MainLayout() {
                     {cart.reduce((total, item) => total + item.quantity, 0)}
                   </span>
                 )}
-              </button>
+              </button> 
+              */}
             </div>
 
             {/* Mobile Toggle */}
             <div className="flex md:hidden items-center gap-3">
+              {/* --- FASE 2: BOTÓN DE CARRITO MÓVIL COMENTADO --- */}
+              {/* 
               <button onClick={() => setCartOpen(true)} className="relative p-2.5 bg-[#266433] text-white rounded-full shadow-md">
                 <ShoppingBag className="w-4 h-4 text-[#CFD1FC]" />
                 {cart.length > 0 && <span className="absolute -top-1 -right-1 bg-[#FE4811] text-white font-black text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{cart.length}</span>}
               </button>
+              */}
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-[#266433] bg-white/50 rounded-xl">
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -573,11 +591,11 @@ function MainLayout() {
         )}
       </nav>
 
-      {/* ROUTES (REPLACES STATE RENDER) */}
       <main>
         <Routes>
-          <Route path="/" element={<HomeView addToCart={addToCart} />} />
-          <Route path="/planes" element={<PlanesView addToCart={addToCart} />} />
+          {/* Se pasa handleWhatsAppOrder en vez de addToCart */}
+          <Route path="/" element={<HomeView handleWhatsAppOrder={handleWhatsAppOrder} />} />
+          <Route path="/planes" element={<PlanesView handleWhatsAppOrder={handleWhatsAppOrder} />} />
           <Route path="/nutricionistas" element={<NutricionistasView />} />
           <Route path="/calculadora" element={<CalculadoraView />} />
         </Routes>
@@ -605,8 +623,7 @@ function MainLayout() {
             <div>
               <h4 className="font-fantony font-black text-sm uppercase tracking-wider mb-4 text-[#CFD1FC]">Atención al Cliente</h4>
               <ul className="space-y-2.5 text-xs font-bold text-white/90 font-montserrat">
-                <li><a href="#" className="hover:text-[#CFD1FC]">Preguntas Frecuentes</a></li>
-                <li><a href="#" className="hover:text-[#CFD1FC]">Zonas de Delivery Lima</a></li>
+                <li><a href="#" className="hover:text-[#CFD1FC]">Preguntas Frecuentes</a></li>                
                 <li><a href="#" className="hover:text-[#CFD1FC]">Contacto</a></li>
               </ul>
             </div>
@@ -635,7 +652,8 @@ function MainLayout() {
         </a>
       </div>
 
-      {/* CART DRAWER (MODAL) */}
+      {/* --- FASE 2: MODAL DEL CARRITO DE COMPRAS (COMENTADO) --- */}
+      {/* 
       {cartOpen && (
         <div className="fixed inset-0 z-[60] flex justify-end">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setCartOpen(false)} />
@@ -695,6 +713,7 @@ function MainLayout() {
           </div>
         </div>
       )}
+      */}
     </div>
   );
 }
