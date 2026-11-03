@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 1. Declarar la fuente local Fantony (OpenType) */
+@font-face {
+  font-family: 'Fantony';
+  src: url('/fonts/FANTONY.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Declarar la fuente local Montserrat (TrueType) */
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserrat.ttf') format('truetype');
+  font-weight: 100 900; /* Soporta pesos variables */
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Aplicar Montserrat por defecto a todo el cuerpo del documento */
+@layer base {
+  body {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
