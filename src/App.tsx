@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
-  Search, User, ShoppingBag, Menu, X, Heart, Star, MessageCircle, 
-  ShieldCheck, Truck, Sparkles, ArrowRight, Calculator, PawPrint, 
-  Flame, Award, Plus, Leaf, Stethoscope, Trash2, ChevronRight
+  //Search, 
+  //User,
+   //ShoppingBag,
+    Menu, X, Heart, Star, MessageCircle, 
+  //ShieldCheck,
+   Truck, Sparkles, ArrowRight, Calculator, PawPrint, 
+  Flame, 
+  //Award, Plus,
+   Leaf, Stethoscope//, 
+   //Trash2, ChevronRight
 } from 'lucide-react';
 
 // --- TYPES & INTERFACES ---
@@ -460,7 +467,7 @@ export default function App() {
 function MainLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  //const [searchOpen, setSearchOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
 
   /* --- FASE 2: ESTADOS DEL CARRITO COMENTADOS --- 
