@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   //Search, 
   //User,
@@ -880,7 +880,7 @@ function MainLayout() {
             <div className="flex items-center gap-6 lg:gap-10">
               <Link to="/" className="flex items-center gap-2 group text-left">
                 <img 
-                  src="img/Logotipos-sinslogan-01.png" 
+                  src="/img/Logotipos-sinslogan-01.png" 
                   alt="Logo Patita Verde" 
                   className="h-36 w-auto object-contain group-hover:scale-105 transition-transform duration-300" 
                 />
