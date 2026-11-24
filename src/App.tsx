@@ -3,23 +3,22 @@ import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-ro
 import { 
   //Search, 
   //User,
-   //ShoppingBag,
-    Menu, X, Heart, Star, MessageCircle, 
+  //ShoppingBag,
+  Menu, X, Heart, Star, MessageCircle, 
   //ShieldCheck,
-   Truck, Sparkles, ArrowRight, Calculator, PawPrint, 
+  Truck, Sparkles, ArrowRight, Calculator, PawPrint, 
   Flame, 
   //Award, Plus,
-   Leaf, Stethoscope//, 
-   //Trash2, ChevronRight
+  Leaf, Stethoscope, CheckCircle2, Calendar, MapPin, SlidersHorizontal//, 
+  //Trash2, ChevronRight
 } from 'lucide-react';
 
 // --- TYPES & INTERFACES ---
 export interface RecetaPlan {
   id: number;
   name: string;
+  shortName: string;
   category: string;
-  price180: number;
-  price300: number;
   rating: number;
   reviews: number;
   image: string;
@@ -27,7 +26,17 @@ export interface RecetaPlan {
   badgeBg: string;
   flavorTag: string;
   ingredients: string;
-  proteinType: 'pollo' | 'pavo' | 'cordero' | 'pescado';
+  proteinType: 'pollo' | 'pavo' | 'cordero';
+}
+
+export interface PrecioGramaje {
+  gramaje: number;
+  label: string;
+  especie: 'perro' | 'gato';
+  plan7: number;
+  plan14: number;
+  plan28: number;
+  personalizado28: number | null;
 }
 
 /* --- FASE 2: INTERFAZ DEL CARRITO (COMENTADA) ---
@@ -35,7 +44,7 @@ export interface CartItem {
   id: string;
   productId: number;
   name: string;
-  size: '180g' | '300g';
+  size: string;
   price: number;
   quantity: number;
   image: string;
@@ -51,81 +60,114 @@ export interface MascotaCalculadora {
   condicion: 'bajo' | 'ideal' | 'sobrepeso';
 }
 
-// --- MOCK DATA ---
+// --- DATOS REALES DEL CLIENTE ---
 const RECETAS: RecetaPlan[] = [
   {
     id: 1,
-    name: 'Receta Pavo & Verduras Frescas',
-    category: 'Comida Natural Cocida',
-    price180: 12.90,
-    price300: 18.90,
+    name: 'Receta de Pavo & Verduras',
+    shortName: 'Pavo',
+    category: 'Proteína Magra • Alta Digestibilidad',
     rating: 4.9,
     reviews: 142,
     image: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&q=80&w=400',
     badge: 'MÁS VENDIDO',
     badgeBg: 'bg-[#EC2CC2]', 
-    flavorTag: 'Pavo Magro & Camote',
-    ingredients: 'Pechuga de pavo, camote, zanahoria, espinaca, aceite de oliva, suplemento vitamínico.',
+    flavorTag: 'Pavo seleccionado, vegetales y avena',
+    ingredients: 'Carne de pavo, menudencia balanceada, espinaca, vegetales frescos y avena (personalizable según condición médica).',
     proteinType: 'pavo'
   },
   {
     id: 2,
-    name: 'Receta Pollo & Arroz Integral',
-    category: 'Nutrición Diaria',
-    price180: 10.90,
-    price300: 16.90,
+    name: 'Receta de Pollo Clásica',
+    shortName: 'Pollo',
+    category: 'Nutrición Diaria Balanceada',
     rating: 4.8,
     reviews: 118,
     image: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=400',
     badge: 'FÓRMULA CLÁSICA',
     badgeBg: 'bg-[#FE4811]', 
-    flavorTag: 'Pollo de Corral & Zanahoria',
-    ingredients: 'Pollo fresco, arroz integral, arvejas, zapallo, aceite de linaza, vitaminas.',
+    flavorTag: 'Pollo fresco, vegetales y cereales',
+    ingredients: 'Pollo fresco, menudencia balanceada, espinaca, zanahoria, zapallo y avena (personalizable según condición médica).',
     proteinType: 'pollo'
   },
   {
     id: 3,
-    name: 'Receta Cordero & Cerdo Gourmet',
-    category: 'Proteína Especial',
-    price180: 14.90,
-    price300: 20.90,
+    name: 'Mix Cordero & Cerdo Gourmet',
+    shortName: 'Mix Cordero & Cerdo',
+    category: 'Doble Proteína Especial',
     rating: 5.0,
     reviews: 87,
     image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=400',
-    badge: 'HIPOALERGÉNICO',
+    badge: 'DOBLE PROTEÍNA',
     badgeBg: 'bg-[#8247AF]', 
-    flavorTag: 'Cordero & Espinacas',
-    ingredients: 'Carne de cordero, lomo de cerdo, manzana, espinaca, chía, suplemento mineral.',
+    flavorTag: 'Cordero, cerdo y vegetales',
+    ingredients: 'Carne de cordero, cerdo magro, menudencia balanceada, espinaca, vegetales y avena (personalizable según condición médica).',
     proteinType: 'cordero'
-  },
-  {
-    id: 4,
-    name: 'Mix Pescado de Isla & Pollo',
-    category: 'Piel & Pelaje Brillante',
-    price180: 13.90,
-    price300: 19.90,
-    rating: 4.9,
-    reviews: 95,
-    image: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&q=80&w=400',
-    badge: 'RICOS EN OMEGA 3',
-    badgeBg: 'bg-[#4450FD]', 
-    flavorTag: 'Pescado & Zapallo Macre',
-    ingredients: 'Pescado blanco, pollo, zapallo macre, brócoli, aceite de pescado, taurina.',
-    proteinType: 'pescado'
   }
 ];
 
+const PLANES_PRECIOS: PrecioGramaje[] = [
+  { gramaje: 200, label: '200g', especie: 'perro', plan7: 65, plan14: 100, plan28: 190, personalizado28: 220 },
+  { gramaje: 250, label: '250g', especie: 'perro', plan7: 70, plan14: 110, plan28: 210, personalizado28: 240 },
+  { gramaje: 300, label: '300g', especie: 'perro', plan7: 83, plan14: 135, plan28: 260, personalizado28: 290 },
+  { gramaje: 450, label: '450g', especie: 'perro', plan7: 95, plan14: 160, plan28: 310, personalizado28: 340 },
+  { gramaje: 700, label: '700g', especie: 'perro', plan7: 120, plan14: 210, plan28: 410, personalizado28: 440 },
+  { gramaje: 900, label: '900g', especie: 'perro', plan7: 145, plan14: 260, plan28: 500, personalizado28: 530 },
+  { gramaje: 1200, label: '1200g', especie: 'perro', plan7: 165, plan14: 300, plan28: 580, personalizado28: 610 },
+  { gramaje: 1400, label: '1400g', especie: 'perro', plan7: 190, plan14: 350, plan28: 680, personalizado28: 710 },
+  { gramaje: 1600, label: '1600g', especie: 'perro', plan7: 205, plan14: 380, plan28: 740, personalizado28: 770 },
+  { gramaje: 1800, label: '1800g', especie: 'perro', plan7: 215, plan14: 400, plan28: 780, personalizado28: 810 },
+  { gramaje: 180, label: 'Gato (180g)', especie: 'gato', plan7: 75, plan14: 120, plan28: 200, personalizado28: null }
+];
+
+const ZONAS_DELIVERY = [
+  {
+    dia: 'Lunes y Jueves',
+    color: 'bg-[#1E293B] text-white',
+    distritos: ['Callao', 'La Perla', 'Bellavista', 'La Punta', 'Breña', 'San Miguel', 'Magdalena', 'Pueblo Libre', 'Jesús María', 'Lince', 'San Juan de Miraflores', 'Villa El Salvador', 'Villa María del Triunfo', 'Cercado de Lima']
+  },
+  {
+    dia: 'Martes',
+    color: 'bg-[#FE4811] text-white',
+    distritos: ['Ate', 'San Luis', 'San Borja', 'La Molina', 'Surco', 'Cieneguilla', 'Santa Anita', 'Lurigancho']
+  },
+  {
+    dia: 'Miércoles',
+    color: 'bg-[#266433] text-white',
+    distritos: ['Chorrillos', 'Barranco', 'Miraflores', 'San Isidro', 'Surquillo', 'La Victoria', 'Rímac', 'Comas', 'El Agustino', 'Independencia', 'Los Olivos', 'Puente Piedra', 'San Juan de Lurigancho', 'San Martín de Porres']
+  },
+  {
+    dia: 'Viernes',
+    color: 'bg-[#FE4811] text-white',
+    distritos: ['Ate', 'San Luis', 'San Borja', 'La Molina', 'Surco', 'Cieneguilla', 'Santa Anita', 'Lurigancho', 'Independencia', 'Los Olivos', 'Puente Piedra', 'San Juan de Lurigancho', 'San Martín de Porres', 'Comas', 'Rímac', 'El Agustino']
+  },
+  {
+    dia: 'Sábado',
+    color: 'bg-[#266433] text-white',
+    distritos: ['Chorrillos', 'Barranco', 'Miraflores', 'San Isidro', 'Surquillo', 'La Victoria']
+  }
+];
+
+const WHATSAPP_NUMBER = '51999999999';
+
 // Componente para scrollear hacia arriba al cambiar de ruta
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useEffect(() => {
+    if (hash) {
+      const element = document.getElementById(hash.replace('#', ''));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
   return null;
 };
 
 // --- SUB-COMPONENTS (VIEWS) ---
-const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
+const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg: string) => void }) => (
   <>
     <section className="relative bg-[#CFD1FC] overflow-hidden pt-8 pb-16 lg:py-20 border-b border-[#266433]/10">
       <div className="absolute top-12 left-10 text-[#266433]/15 select-none pointer-events-none transform -rotate-12">
@@ -146,10 +188,10 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
                   <div className="absolute inset-0 bg-gradient-to-t from-[#266433]/90 via-transparent to-transparent" />
                   <div className="absolute top-4 left-4 bg-[#266433] text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#FE4811]" />
-                    100% COCIDO & CONGELADO
+                    COMIDA DISEÑADA POR VETERINARIOS
                   </div>
                   <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <span className="text-[11px] font-extrabold text-[#CFD1FC] uppercase tracking-widest block">Ingredientes Grado Humano</span>
+                    <span className="text-[11px] font-extrabold text-[#CFD1FC] uppercase tracking-widest block">Combina hasta 2 sabores por plan</span>
                     <p className="font-fantony font-black text-xl sm:text-2xl leading-tight">Nutrición de verdad, amor en cada bocado</p>
                   </div>
                 </div>
@@ -164,7 +206,7 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
                   </div>
                   <div className="bg-white p-3 rounded-2xl shadow-md border border-[#266433]/10 flex flex-col items-center text-center transform -rotate-1">
                     <span className="w-3 h-3 rounded-full bg-[#8247AF] mb-1" />
-                    <span className="text-[11px] font-black text-[#266433] leading-tight font-fantony">Receta Cordero</span>
+                    <span className="text-[11px] font-black text-[#266433] leading-tight font-fantony">Mix Cordero & Cerdo</span>
                   </div>
                 </div>
               </div>
@@ -173,22 +215,30 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
 
           <div className="lg:col-span-5 order-1 lg:order-2 text-left">
             <div className="inline-flex items-center gap-2 bg-[#266433] text-white px-4 py-1.5 rounded-full mb-4 shadow-sm">
-              <PawPrint className="w-3.5 h-3.5 text-[#CFD1FC]" />
-              <span className="text-xs font-black tracking-widest uppercase">PLANES SEMANALES & MENSUALES</span>
+              <Stethoscope className="w-3.5 h-3.5 text-[#CFD1FC]" />
+              <span className="text-xs font-black tracking-widest uppercase">DISEÑADA POR VETERINARIOS</span>
             </div>
             <h1 className="font-fantony text-[#266433] font-black text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-none mb-4">
               Packs pensados para consentirlos mejor.
             </h1>
-            <p className="text-slate-800 text-base md:text-lg font-medium mb-8 leading-relaxed font-montserrat">
-              Alimento natural, cocido al vacío y congelado. Sin preservantes, formulado por veterinarios para mayor salud y vitalidad.
+            <p className="text-slate-800 text-base md:text-lg font-medium mb-6 leading-relaxed font-montserrat">
+              Alimento natural cocido, diseñado por veterinarios. Planes de <strong>7, 14 y 28 días</strong> donde puedes combinar hasta <strong>2 sabores</strong> según el peso y actividad de tu engreído.
             </p>
+            <div className="bg-white/80 border border-[#266433]/20 rounded-2xl p-3.5 mb-7 flex items-center gap-3 shadow-sm">
+              <div className="bg-[#FE4811] text-white p-2 rounded-xl shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <p className="text-xs font-bold text-[#266433] font-montserrat">
+                ¡Promoción activa! Por la compra de tu plan accedes a una <span className="underline">Teleconsulta Veterinaria</span>.
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/calculadora" className="inline-flex justify-center items-center bg-[#FE4811] hover:bg-[#e03e0a] text-white font-black text-sm px-6 py-4 rounded-full shadow-lg hover:scale-105 transition-transform font-montserrat">
                 <Calculator className="w-4 h-4 mr-2" />
                 CALCULAR PLAN IDEAL
               </Link>
               <Link to="/planes" className="inline-flex justify-center items-center bg-white border-2 border-[#266433] text-[#266433] hover:bg-[#CFD1FC]/50 font-black text-sm px-6 py-4 rounded-full transition-colors font-montserrat">
-                VER RECETAS
+                VER PLANES Y PRECIOS
               </Link>
             </div>
           </div>
@@ -201,23 +251,23 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-slate-100 flex flex-col items-center text-center">
             <div className="w-14 h-14 bg-[#BEC1E5]/40 rounded-full flex items-center justify-center mb-4 text-[#266433]"><Leaf className="w-7 h-7" /></div>
-            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">100% Natural</h3>
-            <p className="text-sm text-slate-600 font-medium font-montserrat">Ingredientes de grado humano, sin harinas, químicos ni preservantes artificiales.</p>
+            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Combina 2 Sabores</h3>
+            <p className="text-sm text-slate-600 font-medium font-montserrat">Elige hasta dos recetas distintas (Pavo, Pollo o Mix Cordero & Cerdo) dentro de tu mismo plan.</p>
           </div>
           <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-slate-100 flex flex-col items-center text-center">
-            <div className="w-14 h-14 bg-[#CFD1FC]/50 rounded-full flex items-center justify-center mb-4 text-[#4450FD]"><Flame className="w-7 h-7" /></div>
-            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Cocido & Congelado</h3>
-            <p className="text-sm text-slate-600 font-medium font-montserrat">Cocción al vapor suave que elimina bacterias manteniendo nutrientes intactos.</p>
+            <div className="w-14 h-14 bg-[#CFD1FC]/50 rounded-full flex items-center justify-center mb-4 text-[#4450FD]"><SlidersHorizontal className="w-7 h-7" /></div>
+            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Planes Personalizados</h3>
+            <p className="text-sm text-slate-600 font-medium font-montserrat">Retiramos menudencia, espinaca o avena según alergias o condiciones médicas en planes de 28 días.</p>
           </div>
           <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-slate-100 flex flex-col items-center text-center">
             <div className="w-14 h-14 bg-[#FE4811]/10 rounded-full flex items-center justify-center mb-4 text-[#FE4811]"><Calculator className="w-7 h-7" /></div>
-            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Porciones Exactas</h3>
-            <p className="text-sm text-slate-600 font-medium font-montserrat">Empaques listos para servir. Calculamos la ración ideal según su peso.</p>
+            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">200g hasta 1800g</h3>
+            <p className="text-sm text-slate-600 font-medium font-montserrat">Raciones diarias exactas para perros desde 200g hasta 1.8kg, y presentación especial de 180g para gatos.</p>
           </div>
           <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-slate-100 flex flex-col items-center text-center">
             <div className="w-14 h-14 bg-[#266433]/10 rounded-full flex items-center justify-center mb-4 text-[#266433]"><Stethoscope className="w-7 h-7" /></div>
-            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Aval Veterinario</h3>
-            <p className="text-sm text-slate-600 font-medium font-montserrat">Formulaciones certificadas por especialistas en nutrición animal.</p>
+            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Diseñada por Veterinarios</h3>
+            <p className="text-sm text-slate-600 font-medium font-montserrat">Fórmulas respaldadas por nuestro doctor veterinario, incluyendo acceso a teleconsulta con tu plan.</p>
           </div>
         </div>
       </div>
@@ -227,31 +277,37 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-end mb-10">
           <div>
-            <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs tracking-widest uppercase px-3.5 py-1 rounded-full border border-[#266433]/20 font-montserrat">LOS FAVORITOS</span>
-            <h2 className="font-fantony text-[#266433] font-black text-3xl sm:text-4xl py-3 uppercase tracking-wide">Platos Estrella</h2>
+            <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs tracking-widest uppercase px-3.5 py-1 rounded-full border border-[#266433]/20 font-montserrat">NUESTRAS 3 RECETAS</span>
+            <h2 className="font-fantony text-[#266433] font-black text-3xl sm:text-4xl py-3 uppercase tracking-wide">Sabores Disponibles</h2>
           </div>
           <Link to="/planes" className="hidden sm:flex items-center text-[#FE4811] font-black text-sm hover:underline font-montserrat">
-            Ver menú completo <ArrowRight className="w-4 h-4 ml-1" />
+            Ver tabla de precios <ArrowRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {RECETAS.slice(0, 4).map((product) => (
-            <div key={product.id} className="bg-white rounded-3xl p-4 border-2 border-slate-100 hover:border-[#266433] transition-all duration-300 hover:shadow-xl flex flex-col">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {RECETAS.map((product) => (
+            <div key={product.id} className="bg-white rounded-3xl p-5 border-2 border-slate-100 hover:border-[#266433] transition-all duration-300 hover:shadow-xl flex flex-col">
               <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-slate-50">
                 <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                <span className={`absolute top-2 left-2 ${product.badgeBg} text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md uppercase font-montserrat`}>
+                <span className={`absolute top-3 left-3 ${product.badgeBg} text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md uppercase font-montserrat`}>
                   {product.badge}
                 </span>
               </div>
               <span className="text-[11px] font-black text-[#266433] uppercase tracking-wider block mb-1 font-montserrat">{product.category}</span>
-              <h3 className="font-fantony font-black text-slate-900 text-lg leading-snug mb-1">{product.name}</h3>
+              <h3 className="font-fantony font-black text-slate-900 text-xl leading-snug mb-1">{product.name}</h3>
               <p className="text-xs text-slate-500 font-bold mb-3 font-montserrat">{product.flavorTag}</p>
-              <div className="mt-auto pt-3 flex items-center justify-between">
-                <span className="font-fantony text-xl font-black text-[#266433]">S/ {product.price300.toFixed(2)}</span>
-                {/* Modificado para redirigir a WhatsApp en Fase 1 */}
-                <button onClick={() => handleWhatsAppOrder(product.name, '300g')} className="bg-[#266433] hover:bg-[#25D366] text-white p-2.5 rounded-xl transition-colors shadow-md">
-                  <MessageCircle className="w-4 h-4" />
+              <p className="text-xs text-slate-600 mb-4 font-montserrat leading-relaxed">{product.ingredients}</p>
+              <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block font-montserrat">Planes desde</span>
+                  <span className="font-fantony text-xl font-black text-[#266433]">S/ 65.00</span>
+                </div>
+                <button 
+                  onClick={() => handleWhatsAppOrder(`¡Hola Patita Verde! 🐾 Me interesa la ${product.name}. ¿Me ayudan a elegir el gramaje y plan ideal?`)} 
+                  className="bg-[#266433] hover:bg-[#25D366] text-white px-4 py-2.5 rounded-xl transition-colors shadow-md flex items-center gap-2 text-xs font-black font-montserrat"
+                >
+                  <MessageCircle className="w-4 h-4" /> Consultar
                 </button>
               </div>
             </div>
@@ -262,102 +318,252 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
   </>
 );
 
-const PlanesView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: any }) => (
-  <section className="bg-[#F8FAFC] py-12 lg:py-20 min-h-screen">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center max-w-2xl mx-auto mb-14">
-        <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs tracking-widest uppercase px-3.5 py-1 rounded-full font-montserrat">NUESTROS PLANES</span>
-        <h1 className="font-fantony text-[#266433] font-black text-4xl sm:text-5xl py-3 uppercase">Menú 100% Natural</h1>
-        <div className="w-16 h-1.5 bg-[#FE4811] mx-auto rounded-full mb-3" />
-        <p className="text-slate-600 font-medium font-montserrat">Elige la receta favorita de tu engreído. Empaques listos para descongelar y servir.</p>
-      </div>
+const PlanesView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg: string) => void }) => {
+  const [selectedFlavors, setSelectedFlavors] = useState<string[]>(['Pavo']);
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-12">
-        {RECETAS.map((receta) => (
-          <div key={receta.id} className="bg-white rounded-3xl p-5 sm:p-6 border-2 border-slate-100 flex flex-col sm:flex-row gap-6 hover:shadow-2xl hover:border-[#CFD1FC] transition-all">
-            <div className="w-full sm:w-2/5 relative">
-              <div className="aspect-square rounded-2xl overflow-hidden">
-                <img src={receta.image} alt={receta.name} className="w-full h-full object-cover" />
-              </div>
-              <span className={`absolute top-2 left-2 ${receta.badgeBg} text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md uppercase font-montserrat`}>
-                {receta.badge}
-              </span>
-            </div>
-            
-            <div className="w-full sm:w-3/5 flex flex-col">
-              <div className="flex items-center gap-1.5 mb-2">
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />)}
-                </div>
-                <span className="text-xs text-slate-500 font-bold font-montserrat">({receta.reviews} reseñas)</span>
-              </div>
-              
-              <h3 className="font-fantony font-black text-[#266433] text-2xl leading-tight mb-2">{receta.name}</h3>
-              
-              <div className="flex flex-wrap gap-2 mb-4 font-montserrat">
-                <span className="bg-slate-100 text-slate-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">Fresco</span>
-                <span className="bg-slate-100 text-slate-700 text-[10px] font-black px-2 py-1 rounded-md uppercase">Cocido</span>
-              </div>
-              
-              <p className="text-xs text-slate-600 mb-4 leading-relaxed font-montserrat"><strong className="text-slate-800">Ingredientes:</strong> {receta.ingredients}</p>
-              
-              <div className="mt-auto space-y-3 font-montserrat">
-                {/* Modificados para abrir WhatsApp en lugar de agregar a carrito en Fase 1 */}
-                <div className="flex items-center justify-between p-3 border-2 border-slate-100 rounded-xl hover:border-[#25D366] cursor-pointer group" onClick={() => handleWhatsAppOrder(receta.name, '180g')}>
-                  <div>
-                    <span className="block font-black text-slate-900 text-sm group-hover:text-[#25D366] transition-colors">Empaque Pequeño (180g)</span>
-                    <span className="text-xs text-slate-500 font-medium">Ideal para perros pequeños o gatos</span>
-                  </div>
-                  <div className="text-right flex items-center gap-3">
-                    <span className="font-fantony font-black text-[#FE4811] text-lg">S/ {receta.price180.toFixed(2)}</span>
-                    <div className="bg-slate-100 p-2 rounded-lg group-hover:bg-[#25D366] group-hover:text-white transition-colors"><MessageCircle className="w-4 h-4"/></div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 border-2 border-[#266433]/20 bg-[#CFD1FC]/20 rounded-xl hover:border-[#25D366] hover:bg-white cursor-pointer group transition-all" onClick={() => handleWhatsAppOrder(receta.name, '300g')}>
-                  <div>
-                    <span className="block font-black text-[#266433] text-sm group-hover:text-[#25D366]">Empaque Regular (300g)</span>
-                    <span className="text-xs text-[#266433]/70 font-bold group-hover:text-[#25D366]/70">Mejor valor nutricional/precio</span>
-                  </div>
-                  <div className="text-right flex items-center gap-3">
-                    <span className="font-fantony font-black text-[#266433] text-xl">S/ {receta.price300.toFixed(2)}</span>
-                    <div className="bg-[#266433] text-white p-2 rounded-lg group-hover:bg-[#25D366] transition-colors"><MessageCircle className="w-4 h-4"/></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
+  const toggleFlavor = (shortName: string) => {
+    setSelectedFlavors(prev => {
+      if (prev.includes(shortName)) {
+        return prev.length > 1 ? prev.filter(f => f !== shortName) : prev;
+      }
+      if (prev.length >= 2) {
+        return [prev[1], shortName];
+      }
+      return [...prev, shortName];
+    });
+  };
 
-const NutricionistasView = () => (
-  <section className="bg-white py-12 lg:py-20 min-h-screen">
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center max-w-2xl mx-auto mb-16">
-        <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs tracking-widest uppercase px-3.5 py-1 rounded-full font-montserrat">RESPALDO CIENTÍFICO</span>
-        <h1 className="font-fantony text-[#266433] font-black text-4xl sm:text-5xl py-3 uppercase">Equipo Veterinario</h1>
-        <p className="text-slate-600 font-medium font-montserrat">Nuestras recetas no son improvisadas. Han sido formuladas y aprobadas por médicos veterinarios especialistas en nutrición de mascotas.</p>
-      </div>
+  const flavorsLabel = selectedFlavors.join(' + ');
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div className="bg-[#F8FAFC] rounded-3xl p-8 border border-slate-100 text-center">
-          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-[#266433] mb-6">
-            <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300" alt="Dra. Vet" className="w-full h-full object-cover"/>
-          </div>
-          <h3 className="font-fantony font-black text-[#266433] text-2xl">Dra. María Fernanda Ríos</h3>
-          <p className="text-[#FE4811] font-bold text-sm mb-4 font-montserrat">CMVP 10234 • Especialista en Nutrición Canina</p>
-          <p className="text-slate-600 text-sm leading-relaxed font-montserrat">"Recomiendo Patita Verde porque el proceso de cocción suave elimina el riesgo bacteriano de la dieta BARF cruda, pero mantiene intactos los nutrientes esenciales y aminoácidos que tu perro necesita."</p>
+  return (
+    <section className="bg-[#F8FAFC] py-12 lg:py-20 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs tracking-widest uppercase px-3.5 py-1 rounded-full font-montserrat">COMIDA DISEÑADA POR VETERINARIOS</span>
+          <h1 className="font-fantony text-[#266433] font-black text-4xl sm:text-5xl py-3 uppercase">Nuestras Recetas y Planes</h1>
+          <div className="w-16 h-1.5 bg-[#FE4811] mx-auto rounded-full mb-4" />
+          <p className="text-slate-600 font-medium font-montserrat">
+            Contamos con <strong>3 sabores naturales</strong> (Pavo, Pollo y Mix Cordero & Cerdo) en presentaciones desde <strong>200g hasta 1800g</strong> para perros, y <strong>180g</strong> para gatos. Puedes combinar hasta <strong>2 sabores</strong> en tu plan.
+          </p>
         </div>
-        <div className="bg-[#F8FAFC] rounded-3xl p-8 border border-slate-100 text-center">
-          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-[#4450FD] mb-6">
-            <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=300" alt="Dr. Vet" className="w-full h-full object-cover"/>
+
+        {/* 1. LAS 3 RECETAS Y SELECTOR DE COMBINACIÓN */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {RECETAS.map((receta) => {
+            const isSelected = selectedFlavors.includes(receta.shortName);
+            return (
+              <div 
+                key={receta.id} 
+                onClick={() => toggleFlavor(receta.shortName)}
+                className={`bg-white rounded-3xl p-5 border-2 transition-all cursor-pointer flex flex-col ${isSelected ? 'border-[#266433] shadow-xl ring-2 ring-[#266433]/20' : 'border-slate-100 hover:border-[#CFD1FC]'}`}
+              >
+                <div className="relative h-48 rounded-2xl overflow-hidden mb-4">
+                  <img src={receta.image} alt={receta.name} className="w-full h-full object-cover" />
+                  <span className={`absolute top-2.5 left-2.5 ${receta.badgeBg} text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md uppercase font-montserrat`}>
+                    {receta.badge}
+                  </span>
+                  <div className={`absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase font-montserrat ${isSelected ? 'bg-[#266433] text-white' : 'bg-white/90 text-slate-600'}`}>
+                    {isSelected ? '✓ Seleccionado' : '+ Combinar'}
+                  </div>
+                </div>
+                <h3 className="font-fantony font-black text-[#266433] text-xl leading-tight mb-2">{receta.name}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-montserrat mb-3">{receta.ingredients}</p>
+                <div className="mt-auto pt-2 flex items-center justify-between text-xs font-bold text-[#266433] font-montserrat">
+                  <span>Clic para incluir en tu mix</span>
+                  <div className="flex text-amber-400">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* BARRA DE COMBINACIÓN ACTIVA */}
+        <div className="bg-[#CFD1FC]/50 border-2 border-[#266433]/20 rounded-2xl p-4 mb-12 flex flex-col sm:flex-row items-center justify-between gap-4 font-montserrat">
+          <div className="flex items-center gap-3">
+            <PawPrint className="w-6 h-6 text-[#266433] shrink-0" />
+            <div>
+              <span className="text-xs font-black uppercase text-[#266433] block">Sabores seleccionados para tu pedido (máx. 2):</span>
+              <span className="text-base font-black text-slate-900">{flavorsLabel}</span>
+            </div>
           </div>
-          <h3 className="font-fantony font-black text-[#266433] text-2xl">Dr. Carlos Mendoza</h3>
-          <p className="text-[#FE4811] font-bold text-sm mb-4 font-montserrat">CMVP 08452 • Gastroenterología Veterinaria</p>
-          <p className="text-slate-600 text-sm leading-relaxed font-montserrat">"La transición de croquetas a comida natural cocida resuelve el 80% de problemas de alergias en piel y sensibilidades estomacales. La formulación de estas recetas tiene el balance exacto."</p>
+          <Link to="/calculadora" className="text-xs font-black bg-[#FE4811] text-white px-4 py-2.5 rounded-full hover:bg-[#e03e0a] transition-colors shrink-0">
+            ¿No sabes qué gramaje elegir? Usa la Calculadora →
+          </Link>
+        </div>
+
+        {/* 2. TABLA DE PRECIOS POR GRAMAJE */}
+        <div className="bg-white rounded-3xl shadow-xl border-2 border-slate-100 overflow-hidden mb-14">
+          <div className="p-6 sm:p-8 bg-[#266433] text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-fantony font-black text-2xl sm:text-3xl uppercase">Tarifario Oficial por Gramaje</h2>
+              <p className="text-xs sm:text-sm text-[#CFD1FC] font-montserrat mt-1">
+                Todos los planes incluyen acceso a una <strong>Teleconsulta Veterinaria</strong>. El Plan de 7 días aplica solo para nuevos clientes.
+              </p>
+            </div>
+            <span className="bg-[#FE4811] text-white text-xs font-black px-4 py-2 rounded-full uppercase tracking-wider self-start md:self-center font-montserrat">
+              Precios en Soles (S/)
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse font-montserrat">
+              <thead>
+                <tr className="bg-slate-100 text-slate-800 text-xs uppercase font-black border-b border-slate-200">
+                  <th className="py-4 px-4 sm:px-6">Gramaje Diario</th>
+                  <th className="py-4 px-4 bg-slate-900 text-white">
+                    Plan 7 días
+                    <span className="block text-[10px] font-normal text-[#CFD1FC] normal-case">(Solo nuevos clientes)</span>
+                  </th>
+                  <th className="py-4 px-4">Plan 14 días</th>
+                  <th className="py-4 px-4 bg-[#CFD1FC]/40 text-[#266433]">Plan 28 días</th>
+                  <th className="py-4 px-4">
+                    Personalizados
+                    <span className="block text-[10px] font-bold text-[#FE4811] normal-case">(Solo 28 días)</span>
+                  </th>
+                  <th className="py-4 px-4 text-center">Pedir</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-sm">
+                {PLANES_PRECIOS.map((row) => (
+                  <tr key={row.label} className={row.especie === 'gato' ? 'bg-[#CFD1FC]/25 font-bold' : 'hover:bg-slate-50 transition-colors'}>
+                    <td className="py-3.5 px-4 sm:px-6 font-fantony font-black text-[#266433] text-base">
+                      {row.label}
+                    </td>
+                    <td className="py-3.5 px-4 font-black text-slate-900">S/ {row.plan7}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-700">S/ {row.plan14}</td>
+                    <td className="py-3.5 px-4 font-black text-[#266433] bg-[#CFD1FC]/15">S/ {row.plan28}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-700">
+                      {row.personalizado28 ? `S/ ${row.personalizado28}` : <span className="text-xs text-slate-400">No aplica</span>}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <button
+                        onClick={() => handleWhatsAppOrder(`¡Hola Patita Verde! 🐾 Quiero cotizar el plan de *${row.label}* en sabor(es): *${flavorsLabel}*. ¿Me brindan información para iniciar?`)}
+                        className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black px-3.5 py-2 rounded-xl shadow-sm transition-transform hover:scale-105"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" /> Elegir
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 3. PLANES PERSONALIZADOS */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-[#266433]/15 shadow-lg mb-14 font-montserrat">
+          <div className="flex flex-col lg:flex-row gap-8 items-center">
+            <div className="lg:w-2/3">
+              <span className="bg-[#FE4811]/10 text-[#FE4811] font-black text-xs uppercase px-3 py-1 rounded-full">ATENCIÓN CLÍNICA ESPECIAL</span>
+              <h3 className="font-fantony font-black text-[#266433] text-2xl sm:text-3xl mt-3 mb-3">¿Qué son los Planes Personalizados (28 días)?</h3>
+              <p className="text-sm text-slate-600 leading-relaxed mb-4">
+                Son planes especiales de <strong>28 días</strong> donde adaptamos nuestra receta original retirando insumos específicos según la condición médica o alergia de tu mascota:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200">
+                  <strong className="text-[#266433] block mb-1">Sin Menudencia</strong>
+                  <span className="text-slate-600">Ideal para perros adultos con problemas de hígado o biliares.</span>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200">
+                  <strong className="text-[#266433] block mb-1">Sin Espinaca</strong>
+                  <span className="text-slate-600">Recomendado para mascotas con sensibilidad o temas renales.</span>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200">
+                  <strong className="text-[#266433] block mb-1">Sin Avena</strong>
+                  <span className="text-slate-600">Para perros con intolerancia digestiva o alergia a la avena.</span>
+                </div>
+              </div>
+            </div>
+            <div className="lg:w-1/3 w-full bg-[#CFD1FC]/35 p-6 rounded-2xl border border-[#266433]/20 text-center">
+              <Stethoscope className="w-10 h-10 text-[#266433] mx-auto mb-3" />
+              <h4 className="font-fantony font-black text-[#266433] text-lg mb-2">Asesoría Personalizada</h4>
+              <p className="text-xs text-slate-700 mb-4">Cuéntanos la indicación de tu veterinario y preparamos su plan de 28 días a medida.</p>
+              <button
+                onClick={() => handleWhatsAppOrder(`¡Hola Patita Verde! 🐾 Necesito un *Plan Personalizado de 28 días* (sin menudencia / sin espinaca / sin avena) en sabor(es): *${flavorsLabel}*.`)}
+                className="w-full bg-[#266433] hover:bg-[#1f5028] text-white font-black text-xs py-3.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" /> CONSULTAR PLAN PERSONALIZADO
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. CRONOGRAMA DE REPARTO */}
+        <div id="zonas-delivery" className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-slate-100 shadow-lg font-montserrat">
+          <div className="flex items-center gap-3 mb-2">
+            <MapPin className="w-6 h-6 text-[#FE4811]" />
+            <h3 className="font-fantony font-black text-[#266433] text-2xl sm:text-3xl uppercase">Zonas y Días de Reparto</h3>
+          </div>
+          <p className="text-sm text-slate-600 mb-6">Consulta el día de entrega correspondiente a tu distrito en Lima Metropolitana y Callao:</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {ZONAS_DELIVERY.map((zona) => (
+              <div key={zona.dia} className="rounded-2xl border border-slate-200 overflow-hidden flex flex-col bg-[#F8FAFC]">
+                <div className={`${zona.color} py-3 px-4 font-fantony font-black text-center text-sm uppercase tracking-wide flex items-center justify-center gap-1.5`}>
+                  <Calendar className="w-4 h-4" /> {zona.dia}
+                </div>
+                <ul className="p-4 space-y-1.5 text-xs font-bold text-slate-700 flex-1">
+                  {zona.distritos.map((distrito) => (
+                    <li key={distrito} className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#266433]" />
+                      {distrito}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const NutricionistasView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg: string) => void }) => (
+  <section className="bg-white py-12 lg:py-20 min-h-screen">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center max-w-2xl mx-auto mb-14">
+        <span className="bg-[#CFD1FC] text-[#266433] font-black text-xs tracking-widest uppercase px-3.5 py-1 rounded-full font-montserrat">COMIDA DISEÑADA POR VETERINARIOS</span>
+        <h1 className="font-fantony text-[#266433] font-black text-4xl sm:text-5xl py-3 uppercase">Respaldo Veterinario</h1>
+        <p className="text-slate-600 font-medium font-montserrat">
+          Nuestras recetas están formuladas y supervisadas por un médico veterinario especialista, cuidando el balance nutricional de perros y gatos.
+        </p>
+      </div>
+
+      {/* PROMOCIÓN TELECONSULTA */}
+      <div className="bg-[#CFD1FC]/45 border-2 border-[#266433]/20 rounded-3xl p-8 sm:p-10 mb-12 font-montserrat">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-8">
+            <div className="inline-flex items-center gap-2 bg-[#FE4811] text-white text-xs font-black px-3.5 py-1 rounded-full uppercase mb-4">
+              <Sparkles className="w-3.5 h-3.5" /> Beneficio Exclusivo por tu Plan
+            </div>
+            <h2 className="font-fantony font-black text-[#266433] text-2xl sm:text-3xl mb-3">
+              Teleconsulta Veterinaria incluida con tu compra
+            </h2>
+            <p className="text-slate-700 text-sm leading-relaxed mb-5">
+              Contamos con un doctor veterinario que cubre nuestras teleconsultas para orientarte sobre la transición alimentaria, porciones ideales y requerimientos especiales (como planes sin menudencia, sin espinaca o sin avena).
+            </p>
+            <ul className="space-y-2.5 text-xs font-bold text-[#266433]">
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#FE4811]" /> Evaluación de peso, etapa de vida y nivel de actividad.</li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#FE4811]" /> Guía de transición progresiva de croquetas a alimento natural cocido.</li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#FE4811]" /> Adaptación clínica para alergias o sensibilidad hepática, renal o digestiva.</li>
+            </ul>
+          </div>
+          <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-[#266433]/15 shadow-md text-center">
+            <div className="w-20 h-20 mx-auto rounded-full bg-[#266433]/10 flex items-center justify-center text-[#266433] mb-4">
+              <Stethoscope className="w-10 h-10" />
+            </div>
+            <h3 className="font-fantony font-black text-[#266433] text-xl mb-1">Área Veterinaria</h3>
+            <p className="text-xs text-slate-500 font-bold mb-5">Patita Verde • Nutrición Clínica</p>
+            <button
+              onClick={() => handleWhatsAppOrder('¡Hola Patita Verde! 🐾 Quisiera información sobre los planes y el acceso a la *Teleconsulta Veterinaria*.')}
+              className="w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-xs py-3.5 px-4 rounded-full shadow-md transition-transform hover:scale-105 flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4" /> CONSULTAR POR WHATSAPP
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -369,9 +575,28 @@ const CalculadoraView = () => {
     nombre: '', especie: 'perro', edad: 'adulto', peso: 12, actividad: 'moderada', condicion: 'ideal'
   });
   const [calcResult, setCalcResult] = useState<number>(0);
+  const [selectedFlavors, setSelectedFlavors] = useState<string[]>(['Pavo', 'Pollo']);
+  const [esPersonalizado, setEsPersonalizado] = useState<boolean>(false);
+
+  const toggleFlavor = (shortName: string) => {
+    setSelectedFlavors(prev => {
+      if (prev.includes(shortName)) {
+        return prev.length > 1 ? prev.filter(f => f !== shortName) : prev;
+      }
+      if (prev.length >= 2) {
+        return [prev[1], shortName];
+      }
+      return [...prev, shortName];
+    });
+  };
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault();
+    if (calcData.especie === 'gato') {
+      setCalcResult(180);
+      setEsPersonalizado(false);
+      return;
+    }
     if (!calcData.peso) return;
     let baseFactor = 0.025;
     if (calcData.actividad === 'baja') baseFactor = 0.02;
@@ -383,6 +608,20 @@ const CalculadoraView = () => {
     setCalcResult(Math.round(Number(calcData.peso) * 1000 * baseFactor));
   };
 
+  // Encontrar la presentación comercial más cercana de la tabla oficial
+  const getRecommendedTier = (): PrecioGramaje => {
+    if (calcData.especie === 'gato') {
+      return PLANES_PRECIOS.find(p => p.especie === 'gato')!;
+    }
+    const dogTiers = PLANES_PRECIOS.filter(p => p.especie === 'perro');
+    return dogTiers.reduce((prev, curr) =>
+      Math.abs(curr.gramaje - calcResult) < Math.abs(prev.gramaje - calcResult) ? curr : prev
+    );
+  };
+
+  const recommendedTier = calcResult > 0 ? getRecommendedTier() : null;
+  const flavorsText = selectedFlavors.join(' + ');
+
   return (
     <section className="bg-[#BEC1E5]/20 py-12 lg:py-20 min-h-screen font-montserrat">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -390,59 +629,170 @@ const CalculadoraView = () => {
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 bg-[#4450FD] text-white px-3 py-1 rounded-full mb-3 shadow-md">
               <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-xs font-black tracking-widest uppercase">¡NUEVO MÓDULO INTELIGENTE!</span>
+              <span className="text-xs font-black tracking-widest uppercase">COMIDA DISEÑADA POR VETERINARIOS</span>
             </div>
             <h1 className="font-fantony text-[#266433] font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight">Calculadora Nutricional</h1>
-            <p className="text-slate-600 font-medium mt-3">Descubre cuántos gramos de comida Patita Verde necesita al día tu engreído y obtén tu plan recomendado.</p>
+            <p className="text-slate-600 font-medium mt-3">Calcula el gramaje diario ideal según el peso y actividad de tu mascota y cotiza su plan al instante.</p>
           </div>
 
-          <form onSubmit={handleCalculate} className="space-y-8">
+          <form onSubmit={handleCalculate} className="space-y-6">
+            {/* Selector Perro / Gato */}
+            <div>
+              <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">¿Para quién es el plan?</label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => { setCalcData({ ...calcData, especie: 'perro' }); setCalcResult(0); }}
+                  className={`py-3.5 px-4 rounded-2xl font-black text-sm border-2 transition-all ${calcData.especie === 'perro' ? 'bg-[#266433] text-white border-[#266433]' : 'bg-slate-50 text-slate-700 border-slate-200'}`}
+                >
+                  🐶 Perro (200g - 1800g)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setCalcData({ ...calcData, especie: 'gato' }); setCalcResult(0); }}
+                  className={`py-3.5 px-4 rounded-2xl font-black text-sm border-2 transition-all ${calcData.especie === 'gato' ? 'bg-[#266433] text-white border-[#266433]' : 'bg-slate-50 text-slate-700 border-slate-200'}`}
+                >
+                  🐱 Gato (Presentación 180g)
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Nombre de tu mascota</label>
                 <input type="text" placeholder="Ej. Max, Luna..." value={calcData.nombre} onChange={(e) => setCalcData({...calcData, nombre: e.target.value})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 transition-colors"/>
               </div>
-              <div>
-                <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Peso Actual (KG) *</label>
-                <input type="number" min="1" max="90" step="0.1" required placeholder="Ej. 12" value={calcData.peso} onChange={(e) => setCalcData({...calcData, peso: Number(e.target.value)})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#FE4811] font-black text-slate-800 transition-colors"/>
-              </div>
-              <div>
-                <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Etapa de Vida</label>
-                <select value={calcData.edad} onChange={(e) => setCalcData({...calcData, edad: e.target.value as any})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 appearance-none">
-                  <option value="cachorro">Cachorro (Menos de 1 año)</option>
-                  <option value="adulto">Adulto (1 a 7 años)</option>
-                  <option value="senior">Senior (Más de 7 años)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Nivel de Actividad</label>
-                <select value={calcData.actividad} onChange={(e) => setCalcData({...calcData, actividad: e.target.value as any})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 appearance-none">
-                  <option value="baja">Baja (Paseos cortos, duerme mucho)</option>
-                  <option value="moderada">Moderada (1 hora de paseo al día)</option>
-                  <option value="alta">Alta (Muy activo, corre, deportista)</option>
-                </select>
+
+              {calcData.especie === 'perro' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Peso Actual (KG) *</label>
+                    <input type="number" min="1" max="90" step="0.1" required placeholder="Ej. 12" value={calcData.peso} onChange={(e) => setCalcData({...calcData, peso: Number(e.target.value)})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#FE4811] font-black text-slate-800 transition-colors"/>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Etapa de Vida</label>
+                    <select value={calcData.edad} onChange={(e) => setCalcData({...calcData, edad: e.target.value as any})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 appearance-none">
+                      <option value="cachorro">Cachorro (Menos de 1 año)</option>
+                      <option value="adulto">Adulto (1 a 7 años)</option>
+                      <option value="senior">Senior (Más de 7 años)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Nivel de Actividad</label>
+                    <select value={calcData.actividad} onChange={(e) => setCalcData({...calcData, actividad: e.target.value as any})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 appearance-none">
+                      <option value="baja">Baja (Paseos cortos, duerme mucho)</option>
+                      <option value="moderada">Moderada (1 hora de paseo al día)</option>
+                      <option value="alta">Alta (Muy activo, corre, deportista)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Combinación de hasta 2 sabores */}
+            <div>
+              <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">
+                Elige hasta 2 sabores para combinar en tu plan:
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {RECETAS.map((r) => {
+                  const active = selectedFlavors.includes(r.shortName);
+                  return (
+                    <button
+                      type="button"
+                      key={r.id}
+                      onClick={() => toggleFlavor(r.shortName)}
+                      className={`p-3 rounded-2xl border-2 text-xs font-black transition-all flex items-center justify-between ${active ? 'border-[#266433] bg-[#CFD1FC]/30 text-[#266433]' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                    >
+                      <span>{r.shortName}</span>
+                      <span>{active ? '✓' : '+'}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
+            {/* Opción Plan Personalizado (solo Perros) */}
+            {calcData.especie === 'perro' && (
+              <label className="flex items-start gap-3 p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={esPersonalizado}
+                  onChange={(e) => setEsPersonalizado(e.target.checked)}
+                  className="mt-1 accent-[#266433] w-4 h-4"
+                />
+                <span className="text-xs text-slate-700 leading-relaxed">
+                  <strong className="text-[#266433] block">Requiero Plan Personalizado (28 días)</strong>
+                  Retiro de menudencia (hepático/biliar), espinaca (renal) o avena (intolerancia).
+                </span>
+              </label>
+            )}
+
             <button type="submit" className="w-full bg-[#FE4811] hover:bg-[#e03e0a] text-white font-fantony font-black text-lg py-4 px-6 rounded-2xl shadow-xl transition-transform hover:scale-[1.02] flex justify-center items-center gap-2">
-              <Calculator className="w-5 h-5" /> CALCULAR RACIÓN DIARIA
+              <Calculator className="w-5 h-5" /> CALCULAR RACIÓN Y VER PRECIOS
             </button>
           </form>
 
-          {calcResult > 0 && (
+          {calcResult > 0 && recommendedTier && (
             <div className="mt-10 animate-fade-in border-t-2 border-dashed border-slate-200 pt-8">
               <div className="bg-[#CFD1FC]/40 rounded-3xl p-6 md:p-8 border-2 border-[#266433]/20 text-center">
-                <h3 className="font-fantony font-black text-[#266433] text-2xl mb-2">
-                  ¡Listo! {calcData.nombre ? `${calcData.nombre} necesita:` : 'Tu mascota necesita:'}
+                <h3 className="font-fantony font-black text-[#266433] text-2xl mb-1">
+                  {calcData.nombre ? `Plan ideal para ${calcData.nombre}` : 'Tu plan recomendado'}
                 </h3>
-                <div className="text-5xl font-fantony font-black text-[#FE4811] my-4 drop-shadow-sm">
-                  {calcResult} <span className="text-2xl text-[#266433]">Gramos / día</span>
-                </div>
-                <p className="text-slate-700 font-bold mb-6">
-                  Recomendamos dividir esta ración en <span className="text-[#4450FD]">2 comidas de {Math.round(calcResult/2)}g</span> al día.
+                <p className="text-xs font-bold text-slate-600 mb-3">
+                  {calcData.especie === 'perro'
+                    ? `Cálculo estimado: ${calcResult}g/día • Presentación recomendada: ${recommendedTier.label}`
+                    : 'Presentación especial para gatos: 180g'}
                 </p>
-                <a href={`https://wa.me/51999999999?text=Hola%20Patita%20Verde!%20Acabo%20de%20usar%20su%20calculadora.%20Mi%20perrito${calcData.nombre ? ` ${calcData.nombre}` : ''}%20pesa%20${calcData.peso}kg%20y%20necesita%20${calcResult}g%20diarios.%20Quiero%20solicitar%20un%20plan.`}
-                   target="_blank" rel="noopener noreferrer"
-                   className="inline-flex items-center justify-center w-full sm:w-auto bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-sm px-8 py-4 rounded-full shadow-lg transition-transform hover:scale-105 gap-2 uppercase tracking-wide">
+
+                <div className="text-4xl sm:text-5xl font-fantony font-black text-[#FE4811] my-3">
+                  Presentación {recommendedTier.label}
+                </div>
+                <p className="text-xs font-black text-[#266433] uppercase mb-6">
+                  Sabores: {flavorsText} {esPersonalizado ? '• Modalidad Personalizada' : ''}
+                </p>
+
+                {/* Tarjetas de precios según tabla oficial */}
+                {esPersonalizado && recommendedTier.personalizado28 ? (
+                  <div className="max-w-sm mx-auto bg-white p-5 rounded-2xl border-2 border-[#266433] mb-6 shadow-md">
+                    <span className="text-xs font-black text-[#FE4811] uppercase block">Plan Personalizado • 28 días</span>
+                    <span className="font-fantony font-black text-3xl text-[#266433] block my-1">S/ {recommendedTier.personalizado28}</span>
+                    <span className="text-[11px] text-slate-500 font-bold">Incluye Teleconsulta Veterinaria</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                      <span className="text-[11px] font-black text-slate-800 uppercase block">Plan 7 días</span>
+                      <span className="text-[10px] text-[#FE4811] font-bold block mb-1">(Nuevos clientes)</span>
+                      <span className="font-fantony font-black text-2xl text-[#266433]">S/ {recommendedTier.plan7}</span>
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                      <span className="text-[11px] font-black text-slate-800 uppercase block">Plan 14 días</span>
+                      <span className="text-[10px] text-slate-400 font-bold block mb-1">Quincenal</span>
+                      <span className="font-fantony font-black text-2xl text-[#266433]">S/ {recommendedTier.plan14}</span>
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl border-2 border-[#266433] shadow-md">
+                      <span className="text-[11px] font-black text-[#266433] uppercase block">Plan 28 días</span>
+                      <span className="text-[10px] text-[#266433] font-bold block mb-1">Mensual + Teleconsulta</span>
+                      <span className="font-fantony font-black text-2xl text-[#266433]">S/ {recommendedTier.plan28}</span>
+                    </div>
+                  </div>
+                )}
+
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                    `¡Hola Patita Verde! 🐾 Usé la calculadora nutricional.\n` +
+                    `• Mascota: ${calcData.especie.toUpperCase()}${calcData.nombre ? ` (${calcData.nombre})` : ''}\n` +
+                    (calcData.especie === 'perro' ? `• Peso: ${calcData.peso}kg | Actividad: ${calcData.actividad}\n` : '') +
+                    `• Presentación: ${recommendedTier.label}\n` +
+                    `• Sabores: ${flavorsText}\n` +
+                    (esPersonalizado ? `• Modalidad: Plan Personalizado 28 días (S/ ${recommendedTier.personalizado28})\n` : '') +
+                    `Quisiera solicitar mi plan y coordinar la teleconsulta veterinaria.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center w-full sm:w-auto bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-sm px-8 py-4 rounded-full shadow-lg transition-transform hover:scale-105 gap-2 uppercase tracking-wide"
+                >
                   <MessageCircle className="w-5 h-5" /> SOLICITAR PLAN POR WHATSAPP
                 </a>
               </div>
@@ -474,10 +824,9 @@ function MainLayout() {
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const addToCart = (receta: RecetaPlan, size: '180g' | '300g') => {
-    const price = size === '180g' ? receta.price180 : receta.price300;
+  const addToCart = (receta: RecetaPlan, size: string) => {
     const newItem: CartItem = {
-      id: `${receta.id}-${size}-${Date.now()}`, productId: receta.id, name: receta.name, size, price, quantity: 1, image: receta.image
+      id: `${receta.id}-${size}-${Date.now()}`, productId: receta.id, name: receta.name, size, price: 0, quantity: 1, image: receta.image
     };
     setCart(prev => [...prev, newItem]);
     setCartOpen(true);
@@ -488,9 +837,8 @@ function MainLayout() {
   */
 
   // --- FASE 1: Redirección directa a WhatsApp
-  const handleWhatsAppOrder = (productName: string, size: string) => {
-    const text = `¡Hola Patita Verde! 🐾 Quiero pedir la ${productName} en presentación de ${size}. ¿Me ayudan con mi pedido?`;
-    window.open(`https://wa.me/51999999999?text=${encodeURIComponent(text)}`, '_blank');
+  const handleWhatsAppOrder = (customMessage: string) => {
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(customMessage)}`, '_blank');
   };
 
   // Cerrar menú móvil al cambiar de ruta
@@ -516,9 +864,9 @@ function MainLayout() {
 
       {/* TOPBAR */}
       <div className="bg-[#266433] text-white text-xs py-2.5 px-4 text-center font-bold tracking-wider flex items-center justify-center gap-2 shadow-inner">
-        <Truck className="w-4 h-4 text-[#CFD1FC]" />
+        <Stethoscope className="w-4 h-4 text-[#CFD1FC] shrink-0" />
         <span>
-          NUTRICIÓN DE VERDAD • ENVÍO GRATIS A PARTIR DE S/ 79.90. DESCUBRE MÁS{' '}
+          COMIDA DISEÑADA POR VETERINARIOS • TELECONSULTA INCLUIDA CON TU PLAN. CONOCE MÁS{' '}
           <Link to="/planes" className="underline font-black text-[#CFD1FC] hover:text-white transition-colors">AQUÍ</Link>
         </span>
       </div>
@@ -542,7 +890,7 @@ function MainLayout() {
               <div className="hidden lg:flex items-center space-x-2">
                 <Link to="/" className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${getNavClass('/')}`}>Inicio</Link>
                 <Link to="/planes" className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${getNavClass('/planes')}`}>Nuestros Planes</Link>
-                <Link to="/nutricionistas" className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${getNavClass('/nutricionistas')}`}>Nutricionistas</Link>
+                <Link to="/nutricionistas" className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${getNavClass('/nutricionistas')}`}>Veterinario</Link>
                 <Link to="/calculadora" className={`relative px-4 py-2 rounded-full text-sm font-black transition-colors shadow-sm ${location.pathname === '/calculadora' ? 'bg-[#FE4811] text-white' : 'bg-white text-[#FE4811] hover:bg-[#FE4811] hover:text-white border border-[#FE4811]/20'}`}>
                   Calculadora
                   <span className="absolute -top-2 -right-2 bg-[#4450FD] text-white text-[9px] px-1.5 py-0.5 rounded-full uppercase tracking-wider">¡Nuevo!</span>
@@ -592,7 +940,7 @@ function MainLayout() {
           <div className="md:hidden bg-[#CFD1FC] border-t border-[#266433]/15 px-4 pt-3 pb-6 space-y-2 shadow-2xl absolute w-full left-0">
             <Link to="/" className="block w-full text-left px-4 py-3 rounded-xl font-extrabold text-[#266433] hover:bg-white/60">Inicio</Link>
             <Link to="/planes" className="block w-full text-left px-4 py-3 rounded-xl font-extrabold text-[#266433] hover:bg-white/60">Nuestros Planes</Link>
-            <Link to="/nutricionistas" className="block w-full text-left px-4 py-3 rounded-xl font-extrabold text-[#266433] hover:bg-white/60">Nutricionistas</Link>
+            <Link to="/nutricionistas" className="block w-full text-left px-4 py-3 rounded-xl font-extrabold text-[#266433] hover:bg-white/60">Veterinario</Link>
             <Link to="/calculadora" className="block w-full text-left px-4 py-3 rounded-xl font-extrabold bg-[#FE4811] text-white shadow-md">Calculadora de Porciones</Link>
           </div>
         )}
@@ -600,10 +948,9 @@ function MainLayout() {
 
       <main>
         <Routes>
-          {/* Se pasa handleWhatsAppOrder en vez de addToCart */}
           <Route path="/" element={<HomeView handleWhatsAppOrder={handleWhatsAppOrder} />} />
           <Route path="/planes" element={<PlanesView handleWhatsAppOrder={handleWhatsAppOrder} />} />
-          <Route path="/nutricionistas" element={<NutricionistasView />} />
+          <Route path="/nutricionistas" element={<NutricionistasView handleWhatsAppOrder={handleWhatsAppOrder} />} />
           <Route path="/calculadora" element={<CalculadoraView />} />
         </Routes>
       </main>
@@ -617,7 +964,9 @@ function MainLayout() {
                 <PawPrint className="w-6 h-6 text-[#CFD1FC]" />
                 <span className="font-fantony font-black text-2xl text-white tracking-tight">PATITA VERDE®</span>
               </div>
-              <p className="text-xs text-[#CFD1FC]/80 leading-relaxed max-w-xs font-montserrat">Alimentación de verdad para tu perro. Recetas cocidas al vapor con ingredientes reales y aval veterinario.</p>
+              <p className="text-xs text-[#CFD1FC]/80 leading-relaxed max-w-xs font-montserrat">
+                Comida diseñada por veterinarios. Recetas naturales de Pavo, Pollo y Mix Cordero & Cerdo para perros y gatos.
+              </p>
             </div>
             <div>
               <h4 className="font-fantony font-black text-sm uppercase tracking-wider mb-4 text-[#CFD1FC]">Enlaces Rápidos</h4>
@@ -630,14 +979,15 @@ function MainLayout() {
             <div>
               <h4 className="font-fantony font-black text-sm uppercase tracking-wider mb-4 text-[#CFD1FC]">Atención al Cliente</h4>
               <ul className="space-y-2.5 text-xs font-bold text-white/90 font-montserrat">
-                <li><a href="#" className="hover:text-[#CFD1FC]">Preguntas Frecuentes</a></li>                
-                <li><a href="#" className="hover:text-[#CFD1FC]">Contacto</a></li>
+                <li><Link to="/planes#zonas-delivery" className="hover:text-[#CFD1FC]">Zonas y Días de Reparto</Link></li>
+                <li><Link to="/nutricionistas" className="hover:text-[#CFD1FC]">Teleconsulta Veterinaria</Link></li>                
+                <li><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="hover:text-[#CFD1FC]">Contacto WhatsApp</a></li>
               </ul>
             </div>
           </div>
           <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-[#CFD1FC]/70 gap-4 font-montserrat">
             <p>© 2026 PATITA VERDE. Desarrollado por ALXSOLUTIONS.</p>
-            <p className="flex items-center gap-1.5">Hecho con <Heart className="w-3.5 h-3.5 text-[#FE4811] fill-[#FE4811]" /> para perritos felices.</p>
+            <p className="flex items-center gap-1.5">Hecho con <Heart className="w-3.5 h-3.5 text-[#FE4811] fill-[#FE4811]" /> para perritos y gatitos felices.</p>
           </div>
         </div>
       </footer>
@@ -652,7 +1002,7 @@ function MainLayout() {
             </button>
           </div>
         )}
-        <a href="https://wa.me/51999999999" target="_blank" rel="noopener noreferrer"
+        <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer"
            className="bg-[#25D366] hover:bg-[#20ba5a] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 flex items-center justify-center border-2 border-white relative">
           <MessageCircle className="w-6 h-6 fill-white text-[#25D366]" />
           <span className="absolute top-0 right-0 w-3 h-3 bg-[#FE4811] rounded-full border-2 border-white animate-ping" />
@@ -712,9 +1062,6 @@ function MainLayout() {
                 <button onClick={() => alert('¡Listo para la Fase 2: Pasarela de Pagos!')} className="w-full bg-[#FE4811] hover:bg-[#e03e0a] text-white font-fantony font-black py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex justify-center items-center gap-2">
                   PROCEDER AL PAGO <ChevronRight className="w-5 h-5" />
                 </button>
-                <p className="text-center text-[10px] text-slate-500 font-bold uppercase mt-3 flex items-center justify-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-[#266433]"/> Compra 100% Segura
-                </p>
               </div>
             )}
           </div>
