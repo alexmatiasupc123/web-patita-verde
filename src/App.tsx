@@ -7,10 +7,10 @@ import {
   Menu, X, Heart, Star, MessageCircle, 
   //ShieldCheck,
   //Truck,
-   Sparkles, ArrowRight, Calculator, PawPrint, 
+  Sparkles, ArrowRight, Calculator, PawPrint, 
   //Flame, 
   //Award, Plus,
-  Leaf, Stethoscope, CheckCircle2, Calendar, MapPin, SlidersHorizontal//, 
+  Leaf, Stethoscope, CheckCircle2, Calendar, MapPin, SlidersHorizontal, Truck//, 
   //Trash2, ChevronRight
 } from 'lucide-react';
 
@@ -54,6 +54,7 @@ export interface CartItem {
 
 export interface MascotaCalculadora {
   nombre: string;
+  distrito: string;
   especie: 'perro' | 'gato';
   edad: 'cachorro' | 'adulto' | 'senior';
   peso: number | '';
@@ -74,7 +75,7 @@ const RECETAS: RecetaPlan[] = [
     badge: 'MÁS VENDIDO',
     badgeBg: 'bg-[#EC2CC2]', 
     flavorTag: 'Pavo seleccionado, vegetales y avena',
-    ingredients: 'Carne de pavo, menudencia balanceada, espinaca, vegetales frescos y avena (personalizable según condición médica).',
+    ingredients: 'Carne de pavo, menudencia balanceada, espinaca, vegetales frescos y avena (opción hipoalergénica retirando ingredientes en planes de 28 días).',
     proteinType: 'pavo'
   },
   {
@@ -88,7 +89,7 @@ const RECETAS: RecetaPlan[] = [
     badge: 'FÓRMULA CLÁSICA',
     badgeBg: 'bg-[#FE4811]', 
     flavorTag: 'Pollo fresco, vegetales y cereales',
-    ingredients: 'Pollo fresco, menudencia balanceada, espinaca, zanahoria, zapallo y avena (personalizable según condición médica).',
+    ingredients: 'Pollo fresco, menudencia balanceada, espinaca, zanahoria, zapallo y avena (opción hipoalergénica retirando ingredientes en planes de 28 días).',
     proteinType: 'pollo'
   },
   {
@@ -102,7 +103,7 @@ const RECETAS: RecetaPlan[] = [
     badge: 'DOBLE PROTEÍNA',
     badgeBg: 'bg-[#8247AF]', 
     flavorTag: 'Cordero, cerdo y vegetales',
-    ingredients: 'Carne de cordero, cerdo magro, menudencia balanceada, espinaca, vegetales y avena (personalizable según condición médica).',
+    ingredients: 'Carne de cordero, cerdo magro, menudencia balanceada, espinaca, vegetales y avena (opción hipoalergénica retirando ingredientes en planes de 28 días).',
     proteinType: 'cordero'
   }
 ];
@@ -148,6 +149,19 @@ const ZONAS_DELIVERY = [
     distritos: ['Chorrillos', 'Barranco', 'Miraflores', 'San Isidro', 'Surquillo', 'La Victoria']
   }
 ];
+
+// Lista única y ordenada alfabéticamente de todos los distritos para la calculadora
+const TODOS_DISTRITOS = Array.from(
+  new Set(ZONAS_DELIVERY.flatMap((z) => z.distritos))
+).sort((a, b) => a.localeCompare(b, 'es'));
+
+// Helper para obtener los días de reparto de un distrito seleccionado
+const getDiasRepartoPorDistrito = (distrito: string): string => {
+  if (!distrito) return '';
+  if (distrito === 'Otro') return 'Consultar cobertura por WhatsApp';
+  const dias = ZONAS_DELIVERY.filter((z) => z.distritos.includes(distrito)).map((z) => z.dia);
+  return dias.length > 0 ? dias.join(' / ') : 'Consultar cobertura por WhatsApp';
+};
 
 const WHATSAPP_NUMBER = '51999999999';
 
@@ -257,8 +271,8 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg: string) 
           </div>
           <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-slate-100 flex flex-col items-center text-center">
             <div className="w-14 h-14 bg-[#CFD1FC]/50 rounded-full flex items-center justify-center mb-4 text-[#4450FD]"><SlidersHorizontal className="w-7 h-7" /></div>
-            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Planes Personalizados</h3>
-            <p className="text-sm text-slate-600 font-medium font-montserrat">Retiramos menudencia, espinaca o avena según alergias o condiciones médicas en planes de 28 días.</p>
+            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2 leading-snug">Planes Personalizados (Hipoalergénicos)</h3>
+            <p className="text-sm text-slate-600 font-medium font-montserrat">Podemos retirar alguno de los ingredientes de nuestras recetas en planes de 28 días.</p>
           </div>
           <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-slate-100 flex flex-col items-center text-center">
             <div className="w-14 h-14 bg-[#FE4811]/10 rounded-full flex items-center justify-center mb-4 text-[#FE4811]"><Calculator className="w-7 h-7" /></div>
@@ -267,7 +281,9 @@ const HomeView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg: string) 
           </div>
           <div className="p-6 rounded-3xl bg-[#F8FAFC] border border-slate-100 flex flex-col items-center text-center">
             <div className="w-14 h-14 bg-[#266433]/10 rounded-full flex items-center justify-center mb-4 text-[#266433]"><Stethoscope className="w-7 h-7" /></div>
-            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">Diseñada por Veterinarios</h3>
+            <h3 className="font-fantony font-black text-[#266433] text-lg mb-2">
+              Dise<span className="font-montserrat font-black">ñ</span>ada por Veterinarios
+            </h3>
             <p className="text-sm text-slate-600 font-medium font-montserrat">Fórmulas respaldadas por nuestro doctor veterinario, incluyendo acceso a teleconsulta con tu plan.</p>
           </div>
         </div>
@@ -420,7 +436,7 @@ const PlanesView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg: string
                   <th className="py-4 px-4">Plan 14 días</th>
                   <th className="py-4 px-4 bg-[#CFD1FC]/40 text-[#266433]">Plan 28 días</th>
                   <th className="py-4 px-4">
-                    Personalizados
+                    Personalizados (Hipoalergénicos)
                     <span className="block text-[10px] font-bold text-[#FE4811] normal-case">(Solo 28 días)</span>
                   </th>
                   <th className="py-4 px-4 text-center">Pedir</th>
@@ -453,39 +469,39 @@ const PlanesView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg: string
           </div>
         </div>
 
-        {/* 3. PLANES PERSONALIZADOS */}
+        {/* 3. PLANES PERSONALIZADOS (HIPOALERGÉNICOS) */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-[#266433]/15 shadow-lg mb-14 font-montserrat">
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             <div className="lg:w-2/3">
-              <span className="bg-[#FE4811]/10 text-[#FE4811] font-black text-xs uppercase px-3 py-1 rounded-full">ATENCIÓN CLÍNICA ESPECIAL</span>
-              <h3 className="font-fantony font-black text-[#266433] text-2xl sm:text-3xl mt-3 mb-3">¿Qué son los Planes Personalizados (28 días)?</h3>
+              <span className="bg-[#FE4811]/10 text-[#FE4811] font-black text-xs uppercase px-3 py-1 rounded-full">OPCIONES HIPOALERGÉNICAS</span>
+              <h3 className="font-fantony font-black text-[#266433] text-2xl sm:text-3xl mt-3 mb-3">Planes Personalizados (Hipoalergénicos - 28 días)</h3>
               <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                Son planes especiales de <strong>28 días</strong> donde adaptamos nuestra receta original retirando insumos específicos según la condición médica o alergia de tu mascota:
+                En nuestros <strong>planes de 28 días</strong> podemos retirar alguno de los ingredientes de nuestra receta base si tu mascota presenta intolerancia o alergia alimentaria:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200">
                   <strong className="text-[#266433] block mb-1">Sin Menudencia</strong>
-                  <span className="text-slate-600">Ideal para perros adultos con problemas de hígado o biliares.</span>
+                  <span className="text-slate-600">Retiramos la menudencia de la receta base.</span>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200">
                   <strong className="text-[#266433] block mb-1">Sin Espinaca</strong>
-                  <span className="text-slate-600">Recomendado para mascotas con sensibilidad o temas renales.</span>
+                  <span className="text-slate-600">Retiramos la espinaca de la receta base.</span>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-[#F8FAFC] border border-slate-200">
                   <strong className="text-[#266433] block mb-1">Sin Avena</strong>
-                  <span className="text-slate-600">Para perros con intolerancia digestiva o alergia a la avena.</span>
+                  <span className="text-slate-600">Retiramos la avena de la receta base.</span>
                 </div>
               </div>
             </div>
             <div className="lg:w-1/3 w-full bg-[#CFD1FC]/35 p-6 rounded-2xl border border-[#266433]/20 text-center">
               <Stethoscope className="w-10 h-10 text-[#266433] mx-auto mb-3" />
-              <h4 className="font-fantony font-black text-[#266433] text-lg mb-2">Asesoría Personalizada</h4>
-              <p className="text-xs text-slate-700 mb-4">Cuéntanos la indicación de tu veterinario y preparamos su plan de 28 días a medida.</p>
+              <h4 className="font-fantony font-black text-[#266433] text-lg mb-2">Consulta Hipoalergénica</h4>
+              <p className="text-xs text-slate-700 mb-4">Indícanos qué ingrediente de nuestras recetas debemos retirar para tu plan de 28 días.</p>
               <button
-                onClick={() => handleWhatsAppOrder(`¡Hola Patita Verde! 🐾 Necesito un *Plan Personalizado de 28 días* (sin menudencia / sin espinaca / sin avena) en sabor(es): *${flavorsLabel}*.`)}
+                onClick={() => handleWhatsAppOrder(`¡Hola Patita Verde! 🐾 Me interesa un *Plan Personalizado (Hipoalergénico) de 28 días* retirando un ingrediente en sabor(es): *${flavorsLabel}*.`)}
                 className="w-full bg-[#266433] hover:bg-[#1f5028] text-white font-black text-xs py-3.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
-                <MessageCircle className="w-4 h-4" /> CONSULTAR PLAN PERSONALIZADO
+                <MessageCircle className="w-4 h-4" /> CONSULTAR PLAN HIPOALERGÉNICO
               </button>
             </div>
           </div>
@@ -544,12 +560,12 @@ const NutricionistasView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg
               Teleconsulta Veterinaria incluida con tu compra
             </h2>
             <p className="text-slate-700 text-sm leading-relaxed mb-5">
-              Contamos con un doctor veterinario que cubre nuestras teleconsultas para orientarte sobre la transición alimentaria, porciones ideales y requerimientos especiales (como planes sin menudencia, sin espinaca o sin avena).
+              Contamos con un doctor veterinario que cubre nuestras teleconsultas para orientarte sobre la transición alimentaria, porciones ideales y opciones hipoalergénicas de nuestras recetas en planes de 28 días.
             </p>
             <ul className="space-y-2.5 text-xs font-bold text-[#266433]">
               <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#FE4811]" /> Evaluación de peso, etapa de vida y nivel de actividad.</li>
               <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#FE4811]" /> Guía de transición progresiva de croquetas a alimento natural cocido.</li>
-              <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#FE4811]" /> Adaptación clínica para alergias o sensibilidad hepática, renal o digestiva.</li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#FE4811]" /> Orientación para retirar ingredientes específicos en planes hipoalergénicos de 28 días.</li>
             </ul>
           </div>
           <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-[#266433]/15 shadow-md text-center">
@@ -573,11 +589,13 @@ const NutricionistasView = ({ handleWhatsAppOrder }: { handleWhatsAppOrder: (msg
 
 const CalculadoraView = () => {
   const [calcData, setCalcData] = useState<MascotaCalculadora>({
-    nombre: '', especie: 'perro', edad: 'adulto', peso: 12, actividad: 'moderada', condicion: 'ideal'
+    nombre: '', distrito: '', especie: 'perro', edad: 'adulto', peso: 12, actividad: 'moderada', condicion: 'ideal'
   });
   const [calcResult, setCalcResult] = useState<number>(0);
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>(['Pavo', 'Pollo']);
   const [esPersonalizado, setEsPersonalizado] = useState<boolean>(false);
+
+  const diasRepartoDistrito = getDiasRepartoPorDistrito(calcData.distrito);
 
   const toggleFlavor = (shortName: string) => {
     setSelectedFlavors(prev => {
@@ -633,7 +651,7 @@ const CalculadoraView = () => {
               <span className="text-xs font-black tracking-widest uppercase">COMIDA DISEÑADA POR VETERINARIOS</span>
             </div>
             <h1 className="font-fantony text-[#266433] font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight">Calculadora Nutricional</h1>
-            <p className="text-slate-600 font-medium mt-3">Calcula el gramaje diario ideal según el peso y actividad de tu mascota y cotiza su plan al instante.</p>
+            <p className="text-slate-600 font-medium mt-3">Calcula el gramaje diario ideal según el peso y actividad de tu mascota, conoce tu día de reparto y cotiza su plan al instante.</p>
           </div>
 
           <form onSubmit={handleCalculate} className="space-y-6">
@@ -658,10 +676,33 @@ const CalculadoraView = () => {
               </div>
             </div>
 
+            {/* Nombre y Distrito juntos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Nombre de tu mascota</label>
                 <input type="text" placeholder="Ej. Max, Luna..." value={calcData.nombre} onChange={(e) => setCalcData({...calcData, nombre: e.target.value})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 transition-colors"/>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Distrito de entrega *</label>
+                <select
+                  required
+                  value={calcData.distrito}
+                  onChange={(e) => setCalcData({ ...calcData, distrito: e.target.value })}
+                  className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 appearance-none"
+                >
+                  <option value="">Selecciona tu distrito...</option>
+                  {TODOS_DISTRITOS.map((distrito) => (
+                    <option key={distrito} value={distrito}>{distrito}</option>
+                  ))}
+                  <option value="Otro">Otro distrito de Lima / Callao</option>
+                </select>
+                {calcData.distrito && (
+                  <p className="mt-2 text-xs font-extrabold text-[#266433] flex items-center gap-1.5 bg-[#CFD1FC]/40 px-3 py-1.5 rounded-xl">
+                    <Truck className="w-4 h-4 text-[#FE4811] shrink-0" />
+                    <span>Reparto en {calcData.distrito}: <strong className="text-[#FE4811]">{diasRepartoDistrito}</strong></span>
+                  </p>
+                )}
               </div>
 
               {calcData.especie === 'perro' && (
@@ -678,7 +719,7 @@ const CalculadoraView = () => {
                       <option value="senior">Senior (Más de 7 años)</option>
                     </select>
                   </div>
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-xs font-black text-[#266433] uppercase tracking-wider mb-2">Nivel de Actividad</label>
                     <select value={calcData.actividad} onChange={(e) => setCalcData({...calcData, actividad: e.target.value as any})} className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:outline-none focus:border-[#266433] font-bold text-slate-800 appearance-none">
                       <option value="baja">Baja (Paseos cortos, duerme mucho)</option>
@@ -713,7 +754,7 @@ const CalculadoraView = () => {
               </div>
             </div>
 
-            {/* Opción Plan Personalizado (solo Perros) */}
+            {/* Opción Plan Personalizado Hipoalergénico (solo Perros) */}
             {calcData.especie === 'perro' && (
               <label className="flex items-start gap-3 p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200 cursor-pointer">
                 <input
@@ -723,8 +764,8 @@ const CalculadoraView = () => {
                   className="mt-1 accent-[#266433] w-4 h-4"
                 />
                 <span className="text-xs text-slate-700 leading-relaxed">
-                  <strong className="text-[#266433] block">Requiero Plan Personalizado (28 días)</strong>
-                  Retiro de menudencia (hepático/biliar), espinaca (renal) o avena (intolerancia).
+                  <strong className="text-[#266433] block">Planes Personalizados (Hipoalergénicos - 28 días)</strong>
+                  Podemos retirar alguno de los ingredientes (como menudencia, espinaca o avena) en planes de 28 días.
                 </span>
               </label>
             )}
@@ -749,14 +790,21 @@ const CalculadoraView = () => {
                 <div className="text-4xl sm:text-5xl font-fantony font-black text-[#FE4811] my-3">
                   Presentación {recommendedTier.label}
                 </div>
-                <p className="text-xs font-black text-[#266433] uppercase mb-6">
-                  Sabores: {flavorsText} {esPersonalizado ? '• Modalidad Personalizada' : ''}
+                <p className="text-xs font-black text-[#266433] uppercase mb-4">
+                  Sabores: {flavorsText} {esPersonalizado ? '• Plan Hipoalergénico (28 días)' : ''}
                 </p>
+
+                {calcData.distrito && (
+                  <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-[#266433]/20 text-xs font-extrabold text-[#266433] mb-6 shadow-sm">
+                    <MapPin className="w-4 h-4 text-[#FE4811]" />
+                    <span>Distrito: <strong>{calcData.distrito}</strong> • Días de reparto: <strong className="text-[#FE4811]">{diasRepartoDistrito}</strong></span>
+                  </div>
+                )}
 
                 {/* Tarjetas de precios según tabla oficial */}
                 {esPersonalizado && recommendedTier.personalizado28 ? (
                   <div className="max-w-sm mx-auto bg-white p-5 rounded-2xl border-2 border-[#266433] mb-6 shadow-md">
-                    <span className="text-xs font-black text-[#FE4811] uppercase block">Plan Personalizado • 28 días</span>
+                    <span className="text-xs font-black text-[#FE4811] uppercase block">Plan Personalizado (Hipoalergénico) • 28 días</span>
                     <span className="font-fantony font-black text-3xl text-[#266433] block my-1">S/ {recommendedTier.personalizado28}</span>
                     <span className="text-[11px] text-slate-500 font-bold">Incluye Teleconsulta Veterinaria</span>
                   </div>
@@ -784,10 +832,11 @@ const CalculadoraView = () => {
                   href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
                     `¡Hola Patita Verde! 🐾 Usé la calculadora nutricional.\n` +
                     `• Mascota: ${calcData.especie.toUpperCase()}${calcData.nombre ? ` (${calcData.nombre})` : ''}\n` +
+                    (calcData.distrito ? `• Distrito: ${calcData.distrito} (Reparto: ${diasRepartoDistrito})\n` : '') +
                     (calcData.especie === 'perro' ? `• Peso: ${calcData.peso}kg | Actividad: ${calcData.actividad}\n` : '') +
                     `• Presentación: ${recommendedTier.label}\n` +
                     `• Sabores: ${flavorsText}\n` +
-                    (esPersonalizado ? `• Modalidad: Plan Personalizado 28 días (S/ ${recommendedTier.personalizado28})\n` : '') +
+                    (esPersonalizado ? `• Modalidad: Plan Personalizado (Hipoalergénico) 28 días (S/ ${recommendedTier.personalizado28})\n` : '') +
                     `Quisiera solicitar mi plan y coordinar la teleconsulta veterinaria.`
                   )}`}
                   target="_blank"
