@@ -6,8 +6,9 @@ import {
   //ShoppingBag,
   Menu, X, Heart, Star, MessageCircle, 
   //ShieldCheck,
-  Truck, Sparkles, ArrowRight, Calculator, PawPrint, 
-  Flame, 
+  //Truck,
+   Sparkles, ArrowRight, Calculator, PawPrint, 
+  //Flame, 
   //Award, Plus,
   Leaf, Stethoscope, CheckCircle2, Calendar, MapPin, SlidersHorizontal//, 
   //Trash2, ChevronRight
